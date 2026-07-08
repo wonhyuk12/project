@@ -1,0 +1,44 @@
+.pageHead {
+  background: var(--bg-cream);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-12);
+  padding-top: 70px;
+  padding-bottom: 46px;
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  color: var(--color-accent);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: var(--fs-page-title);
+  color: var(--text-strong);
+}
+
+.title :global(.accent) {
+  color: var(--color-accent);
+}
+
+.description {
+  font-family: var(--font-sans);
+  font-size: var(--fs-16);
+  color: var(--text-muted);
+}
+
+.breadcrumb {
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+  white-space: pre;
+}

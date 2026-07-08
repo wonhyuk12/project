@@ -1,0 +1,158 @@
+.board {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 44px;
+  padding-bottom: 40px;
+}
+
+.count {
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  color: var(--text-muted);
+  padding-bottom: 14px;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* 표 상단 굵은 선 (2px, 진한 색) */
+.topRule {
+  width: 100%;
+  height: 2px;
+  background: var(--text-strong);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-warm);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.headRow {
+  background: var(--bg-cream-2);
+}
+
+/* 컬럼 폭 — 디자인 실측값 (합계 1340px) */
+.colCat {
+  width: 110px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.colTitle {
+  width: 860px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 16px 14px;
+}
+
+.colAuthor {
+  width: 150px;
+  flex-shrink: 0;
+  justify-content: center;
+}
+
+.colDate {
+  width: 130px;
+  flex-shrink: 0;
+  justify-content: center;
+}
+
+.colViews {
+  width: 90px;
+  flex-shrink: 0;
+  justify-content: center;
+}
+
+/* 헤더/데이터의 작성자·작성일·조회 셀 공통 정렬·타이포 */
+.colAuthor,
+.colDate,
+.colViews {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  color: var(--text-muted);
+}
+
+/* 헤더행 텍스트 */
+.headRow .colCat,
+.headRow .colTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  color: var(--text-muted);
+}
+
+/* 구분: 공지 배지 (외곽선) */
+.catBadge {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-card);
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+/* 제목 셀 (링크) */
+.titleCell {
+  gap: var(--space-8);
+  text-decoration: none;
+}
+
+.titleText {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-body);
+  color: var(--text-strong);
+}
+
+.titleCell:hover .titleText {
+  color: var(--color-accent);
+}
+
+/* NEW 배지 (채움) */
+.newBadge {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 10px;
+  color: var(--text-white);
+  background: var(--color-accent);
+  border-radius: var(--radius-card);
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
+/* 페이지네이션 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: 36px;
+}
+
+.pageActive {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-14);
+  color: var(--text-white);
+  background: var(--color-accent);
+  border-radius: 8px;
+  padding: 8px 13px;
+}

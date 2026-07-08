@@ -1,0 +1,105 @@
+.content {
+  display: flex;
+  gap: 80px;
+  align-items: flex-start;
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+
+.column {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.category {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.catHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-12);
+  padding-bottom: var(--space-12);
+}
+
+.catEn {
+  font-family: var(--font-display);
+  font-size: var(--fs-cat);
+  color: var(--color-accent);
+}
+
+.catKo {
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+}
+
+/* 카테고리 상단 굵은 강조선 (2px) */
+.catRule {
+  width: 100%;
+  height: 2px;
+  background: var(--color-accent);
+}
+
+/* 항목 사이 얇은 구분선 (1px) */
+.rowDivider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-warm);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+}
+
+.rowInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.name {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-price);
+  color: var(--text-strong);
+}
+
+.badge {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.note {
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+}
+
+.price {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-16);
+  color: var(--text-strong);
+  white-space: nowrap;
+}

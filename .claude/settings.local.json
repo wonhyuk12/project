@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp __TRACKED_VAR__/shot.mjs ./_shot.mjs)",
+      "Bash(node ./_shot.mjs http://localhost:5174/ __TRACKED_VAR__/home.png)",
+      "Bash(rm -f ./_shot.mjs)",
+      "Read(//home/user/.cache/ms-playwright/**)",
+      "Bash(sudo -n apt-get install -y libnspr4 libnss3 libasound2t64 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2)",
+      "Bash(npm run *)"
+    ]
+  }
+}

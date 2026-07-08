@@ -1,0 +1,7 @@
+.container {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding-left: var(--space-50);
+  padding-right: var(--space-50);
+}

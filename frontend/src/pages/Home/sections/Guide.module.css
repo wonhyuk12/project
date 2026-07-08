@@ -1,0 +1,108 @@
+.section {
+  background: var(--bg-white);
+  padding: 80px 0;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-warm);
+}
+
+.row {
+  display: flex;
+  gap: 70px;
+}
+
+.item {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-22);
+  padding: var(--space-22) 0;
+}
+
+/* 아이콘 placeholder (디자인의 원형 도형) */
+.icon {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.no {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--color-accent);
+}
+
+.itemTitle {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-lg);
+  color: var(--text-strong);
+}
+
+.itemDesc {
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  color: var(--text-muted);
+}
+
+/* 하단 안내 노트 */
+.note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-18);
+  background: var(--bg-cream);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-14);
+  padding: var(--space-22) 28px;
+}
+
+.noteIcon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+}
+
+.noteText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.noteTitle {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--text-strong);
+}
+
+.noteDesc {
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  color: var(--text-muted);
+}

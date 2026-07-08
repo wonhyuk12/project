@@ -1,0 +1,75 @@
+.header {
+  width: 100%;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: var(--fs-logo);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-34);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  flex-shrink: 0;
+}
+
+.navLink {
+  white-space: nowrap;
+}
+
+.phone {
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+  padding: 11px 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ---- 홈 히어로 위 오버레이 (다크 배경 위 흰 텍스트) ---- */
+.transparent {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  color: var(--text-white);
+  background: transparent;
+}
+
+/* ---- 내부 페이지 (흰 배경 위 어두운 텍스트) ---- */
+.solid {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  color: var(--text-strong);
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-warm);
+}
+
+.solid .phone {
+  color: var(--text-strong);
+  border-color: var(--text-muted);
+}
+
+/* 현재 페이지 내비 항목 강조 (내부 페이지에서만) */
+.solid .active {
+  color: var(--color-accent);
+  font-weight: 500;
+}

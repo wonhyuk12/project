@@ -1,0 +1,199 @@
+.wrap {
+  display: flex;
+  justify-content: center;
+  padding: 54px 0 20px;
+}
+
+/* 폼 폭 660px (디자인) */
+.form {
+  width: 660px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-22);
+}
+
+/* 데모 안내 배너 */
+.notice {
+  background: var(--bg-peach);
+  border: 1px solid var(--border-peach);
+  border-radius: var(--radius-10);
+  padding: 12px 16px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  color: var(--text-notice);
+}
+
+/* 신청 카드 */
+.card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-16);
+  padding: 32px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.section {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  width: 100%;
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-14);
+  color: var(--text-strong);
+  padding: 0;
+}
+
+.req {
+  color: var(--color-accent);
+}
+
+.options {
+  display: flex;
+  gap: var(--space-12);
+  width: 100%;
+}
+
+/* 구독 상품 옵션 */
+.planOption {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-12);
+  padding: 16px 0;
+}
+
+.planSelected {
+  background: var(--bg-peach);
+  border: 2px solid var(--color-accent);
+}
+
+.planName {
+  font-family: var(--font-sans);
+  font-size: var(--fs-16);
+  color: var(--text-strong);
+}
+
+.planPrice {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--color-accent);
+}
+
+/* 입력창 */
+.input {
+  width: 100%;
+  background: var(--bg-white);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-10);
+  padding: 13px 14px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-strong);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* 결제 수단 옵션 */
+.payOption {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-12);
+  padding: 16px 0;
+}
+
+.paySelected {
+  border: 2px solid var(--color-accent);
+}
+
+.payLogo {
+  width: 46px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+}
+
+.payLabel {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-14);
+  color: var(--text-strong);
+}
+
+/* 합계 */
+.totalSection {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-warm);
+}
+
+.totalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 20px;
+}
+
+.totalLabel {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-strong);
+}
+
+.totalPrice {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-cat);
+  color: var(--color-accent);
+}
+
+/* 결제하기 버튼 */
+.submit {
+  width: 100%;
+  background: var(--color-accent);
+  color: var(--text-white);
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: 16px 0;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-price);
+}

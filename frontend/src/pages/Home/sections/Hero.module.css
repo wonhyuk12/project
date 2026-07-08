@@ -1,0 +1,91 @@
+.hero {
+  position: relative;
+  background: var(--bg-espresso);
+  color: var(--text-white);
+  min-height: 820px;
+}
+
+/* Hero 카피 — 디자인 기준 좌측 106px, 상단 250px */
+.content {
+  padding-top: 250px;
+  padding-left: 56px; /* Container의 50px + 56px = 좌측 106px */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-24);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-hero);
+  letter-spacing: var(--ls-hero);
+  line-height: 0.95;
+}
+
+.subtitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-hero-sub);
+}
+
+.buttons {
+  display: flex;
+  gap: var(--space-16);
+  padding-top: var(--space-14);
+}
+
+.btn {
+  border: 1px solid var(--text-white);
+  border-radius: var(--radius-pill);
+  padding: 16px 34px;
+  font-size: var(--fs-button);
+  white-space: nowrap;
+}
+
+/* 하단 정보 바 */
+.infoBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  background: var(--bg-dark);
+  display: flex;
+  align-items: center;
+}
+
+.infoInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.infoCols {
+  display: flex;
+  gap: var(--space-56);
+}
+
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.infoLabel {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--color-accent-soft);
+}
+
+.infoValue {
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  color: var(--text-on-dark);
+}
+
+.infoLinks {
+  text-align: right;
+  font-size: var(--fs-caption);
+  color: var(--text-on-dark-55);
+}

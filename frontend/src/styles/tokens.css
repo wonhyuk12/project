@@ -1,0 +1,90 @@
+/* ==========================================================================
+   까치커피바 · 디자인 토큰 (Figma에서 추출)
+   Figma 파일: Ldb2pMFTb81JXsMWDZIkYo
+   값은 디자인의 실제 값을 그대로 고정했습니다. (사용자 확인: "디자인 값 그대로")
+   ========================================================================== */
+
+:root {
+  /* ---------- 색상 · 브랜드/강조 ---------- */
+  --color-accent: #a0482c;        /* 메인 강조 (테라코타): 라벨, 가격, 링크 */
+  --color-accent-soft: #cf9a82;   /* 보조 강조 (로즈/탠): 다크 배경 위 라벨 */
+
+  /* ---------- 색상 · 배경 (커피/브라운) ---------- */
+  --bg-espresso: #2a1c12;         /* Hero 배경 (다크 에스프레소) */
+  --bg-dark: #1f1710;             /* Footer / 정보 바 (가장 진한 브라운) */
+  --bg-cream: #f9f3ea;            /* 밝은 섹션 배경 */
+  --bg-cream-2: #faf6f0;          /* 더 옅은 크림 (게시판 헤더행) */
+  --bg-white: #ffffff;            /* 흰 배경 섹션 (Subscription, Guide) */
+  --surface-brown: #3a2a1e;       /* 카드 이미지 placeholder */
+  --bg-peach: #fbf1ea;            /* 선택된 옵션 / 안내 배너 배경 (연한 살구색) */
+  --border-warm: #dad3cb;         /* 따뜻한 회갈색 테두리/구분선 */
+  --border-peach: #e7c9b7;        /* 안내 배너 테두리 */
+  --text-notice: #9a5636;         /* 안내 배너 텍스트 */
+
+  /* ---------- 색상 · 텍스트 ---------- */
+  --text-strong: #1a1a1a;         /* 밝은 배경 위 제목 */
+  --text-body: #333333;           /* 긴 본문(소식 상세) 텍스트 */
+  --text-muted: #7c7369;          /* 본문 보조 텍스트 */
+  --text-on-dark: #f9f3ea;        /* 다크 배경 위 텍스트 (크림) */
+  --text-white: #ffffff;          /* Hero 텍스트 */
+
+  /* 크림(다크 위) 반투명 단계 */
+  --text-on-dark-72: rgba(249, 243, 234, 0.72);
+  --text-on-dark-65: rgba(249, 243, 234, 0.65);
+  --text-on-dark-55: rgba(249, 243, 234, 0.55);
+  --text-on-dark-50: rgba(249, 243, 234, 0.50);
+  --divider-on-dark: rgba(249, 243, 234, 0.13);
+
+  /* ---------- 타이포그래피 · 폰트 패밀리 ---------- */
+  --font-serif: 'Noto Serif KR', serif;      /* 로고, 한글 섹션 제목 */
+  --font-sans: 'Noto Sans KR', sans-serif;   /* 본문, 내비, 라벨 */
+  --font-display: 'Quattrocento', serif;     /* 영문 디스플레이 */
+
+  /* ---------- 타이포그래피 · 크기 ---------- */
+  --fs-hero: 78px;         /* GGACHI COFFEE BAR (Hero 디스플레이) */
+  --fs-page-title: 44px;   /* 내부 페이지 제목 (Page Head) */
+  --fs-h1: 40px;           /* 섹션 제목 */
+  --fs-card-title: 28px;   /* 카드 제목 */
+  --fs-cat: 24px;          /* 메뉴 카테고리 영문명 */
+  --fs-logo: 22px;         /* 로고 "까치커피바" */
+  --fs-hero-sub: 21px;     /* Hero 서브 카피 */
+  --fs-lg: 20px;
+  --fs-button: 18px;       /* 버튼 텍스트 */
+  --fs-price: 17px;        /* 시그니처 가격 / 메뉴 항목명 */
+  --fs-16: 16px;
+  --fs-body: 15px;         /* 본문 / 내비 */
+  --fs-14: 14px;
+  --fs-label: 13px;        /* 라벨 (SIGNATURE 등) */
+  --fs-caption: 12px;      /* 캡션 / 저작권 */
+
+  /* ---------- 타이포그래피 · 자간 ---------- */
+  --ls-label: 1.3px;      /* 라벨 대문자 */
+  --ls-hero: 3px;         /* Hero 디스플레이 */
+
+  /* ---------- 간격 (디자인 실측값 그대로) ---------- */
+  --space-8: 8px;
+  --space-9: 9px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-22: 22px;
+  --space-24: 24px;
+  --space-30: 30px;
+  --space-34: 34px;
+  --space-50: 50px;   /* 페이지 좌우 패딩 */
+  --space-56: 56px;
+
+  /* ---------- 모서리 ---------- */
+  --radius-card: 4px;      /* 시그니처 카드 이미지 */
+  --radius-10: 10px;       /* 입력창 / 안내 배너 */
+  --radius-12: 12px;       /* 소식 상세 이미지 / 신청 옵션 카드 */
+  --radius-14: 14px;       /* 소식 카드 / 안내 노트 */
+  --radius-16: 16px;       /* 정기구독 플랜 카드 */
+  --radius-pill: 50px;     /* 버튼 · 배지 */
+
+  /* ---------- 레이아웃 ---------- */
+  --page-max: 1440px;      /* 디자인 캔버스 폭 */
+  --content-max: 1340px;   /* 콘텐츠 영역 폭 (좌우 50px 제외) */
+  --header-h: 78px;        /* 헤더 높이 */
+}

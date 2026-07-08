@@ -1,0 +1,31 @@
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  color: var(--color-accent);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: var(--fs-h1);
+  color: var(--text-strong);
+}
+
+/* 제목 내 강조색 부분 (JSX로 <span className="accent"> 사용) */
+.title :global(.accent) {
+  color: var(--color-accent);
+}
+
+.description {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-muted);
+}
