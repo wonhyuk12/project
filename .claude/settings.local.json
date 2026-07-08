@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s --max-time 15 \"https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=1100\")",
+      "Bash(echo \"---EXIT:$?---\")",
+      "Bash(python3 *)"
+    ]
+  }
+}
