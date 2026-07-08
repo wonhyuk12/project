@@ -1,0 +1,104 @@
+erDiagram
+    menu_categories ||--o{ menu_items : "has"
+    menu_items ||--o| home_signatures : "featured as"
+    subscription_plans ||--o{ subscriptions : "ordered as"
+    analytics_sessions ||--o{ analytics_events : "logs"
+    subscriptions }o--o| analytics_sessions : "converted from"
+
+    menu_categories {
+        bigint id PK
+        text name_en
+        text name_ko
+        int sort_order
+    }
+    menu_items {
+        bigint id PK
+        bigint category_id FK
+        text name
+        text note
+        int price
+        bool is_representative
+        int sort_order
+    }
+    home_signatures {
+        bigint id PK
+        bigint menu_item_id FK
+        text name_en
+        text tagline
+        text image_url
+        int sort_order
+    }
+    subscription_plans {
+        bigint id PK
+        text code
+        text name
+        int original_price
+        int price
+        int duration_days
+        text description
+        text badge
+        int sort_order
+        bool is_active
+    }
+    subscriptions {
+        bigint id PK
+        bigint plan_id FK
+        text customer_name
+        text customer_phone
+        text pay_method
+        int amount
+        text status
+        date start_date
+        date end_date
+        uuid session_id FK
+        timestamptz created_at
+    }
+    news {
+        bigint id PK
+        text category
+        text title
+        bool is_new
+        text author
+        text body
+        text image_url
+        int views
+        timestamptz published_at
+    }
+    guide_items {
+        bigint id PK
+        text no
+        text title
+        text body
+        int sort_order
+    }
+    store_info {
+        bigint id PK
+        text brand_name_ko
+        text brand_name_en
+        text phone
+        text address
+        text opening_hours
+        text instagram
+    }
+    analytics_sessions {
+        uuid id PK
+        text anonymous_id
+        text referrer
+        text landing_path
+        text device
+        timestamptz started_at
+        timestamptz ended_at
+    }
+    analytics_events {
+        bigint id PK
+        uuid session_id FK
+        text anonymous_id
+        text event_type
+        text page_name
+        text path
+        text entity_type
+        text entity_id
+        text referrer_path
+        jsonb properties
+        timestamptz occurred_at
+    }
