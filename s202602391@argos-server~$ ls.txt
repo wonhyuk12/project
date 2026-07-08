@@ -1,0 +1,26 @@
+s202602391@argos-server:~$ ls
+s202602391@argos-server:~$ whoami
+s202602391
+s202602391@argos-server:~$ pwd
+/home/s202602391
+s202602391@argos-server:~$ mkdir c-study
+s202602391@argos-server:~$ ls
+c-study
+s202602391@argos-server:~$ cd c-study/
+s202602391@argos-server:~/c-study$ ls
+s202602391vi@argos-server:~/c-study$ touch a.c
+s202602391@argos-server:~/c-study$ ls
+a.c
+s202602391@argos-server:~/c-study$ vim a.c
+s202602391@argos-server:~/c-study$ vim a.c
+s202602391@argos-server:~/c-study$ vim a.c
+s202602391@argos-server:~/c-study$ vim a.c
+s202602391@argos-server:~/c-study$ gcc a.c -o sdfas
+s202602391@argos-server:~/c-study$ ls
+a.c  sdfas
+s202602391@argos-server:~/c-study$ ./sdfas
+hello
+s202602391@argos-server:~/c-study$ vim a.c
+s202602391@argos-server:~/c-study$ gcc a.c -o sdfas
+s202602391@argos-server:~/c-study$ ./sdfas
+hello world!
