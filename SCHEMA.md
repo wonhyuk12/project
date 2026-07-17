@@ -8,7 +8,7 @@
 적용된 설계 결정(페이지별 확인 기준):
 - Signature는 **분리 테이블**(`home_signatures`) — 메뉴 원천 데이터와 홈 큐레이션 분리
 - 가격은 **정수(원)** 저장, UI에서 포맷
-- 소식 본문은 **Markdown(TEXT)**
+- 소식 본문은 **Markdown(TEXT)**, 목록/카드 문구는 **별도 `summary` 컬럼**(본문에서 파생하지 않음)
 - 구독 신청은 **금액 스냅샷(`amount`) + 상태(`status`)** 보존
 - 결제수단·구분 등 고정 소집합은 **varchar + CHECK** (enum 대용, 변경 유연)
 
@@ -81,6 +81,7 @@ erDiagram
         text title
         bool is_new
         text author
+        text summary
         text body
         text image_url
         int views
@@ -218,6 +219,7 @@ create table news (
     title        text not null,
     is_new       bool not null default false,
     author       text not null default '까치커피바',
+    summary      text not null default '',   -- 목록/홈 카드용 한 줄 요약
     body         text not null default '',   -- Markdown
     image_url    text,
     views        int  not null default 0,

@@ -1,5 +1,7 @@
 """앱 설정 — 모든 값은 환경변수(.env)에서 읽습니다. (하드코딩 금지)"""
 import os
+from urllib.parse import quote_plus
+
 from dotenv import load_dotenv
 
 # backend/.env 로드
@@ -20,7 +22,11 @@ def build_database_uri():
         user = os.getenv("DB_USER", "postgres")
         port = os.getenv("DB_PORT", "5432")
         name = os.getenv("DB_NAME", "postgres")
-        return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{name}"
+        # 비밀번호에 @ : / ! 같은 문자가 있어도 접속 문자열이 깨지지 않도록 인코딩합니다.
+        return (
+            f"postgresql+psycopg2://{quote_plus(user)}:{quote_plus(password)}"
+            f"@{host}:{port}/{name}"
+        )
 
     return None
 

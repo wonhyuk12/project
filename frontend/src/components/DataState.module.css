@@ -1,0 +1,11 @@
+.state {
+  padding: var(--space-56) 0;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-muted);
+}
+
+.error {
+  color: var(--text-notice);
+}

@@ -10,4 +10,22 @@ export const NAV_ITEMS = [
   { label: '이용안내', to: '/#guide' },
 ]
 
-export const PHONE = '0507-1445-6303'
+// 해시 링크(예: /#signature) 클릭 처리 공통 헬퍼.
+// 이미 대상 페이지에 있으면 해시가 바뀌지 않아 라우터가 아무 동작도 하지 않으므로,
+// 여기서 직접 해당 섹션으로 스크롤해 누를 때마다 이동되도록 합니다.
+export function handleHashNavClick(e, to, pathname) {
+  const hashIndex = to.indexOf('#')
+  if (hashIndex === -1) return // 일반 링크는 그대로 이동
+
+  const targetPath = to.slice(0, hashIndex) || '/'
+  const hash = to.slice(hashIndex)
+
+  if (pathname === targetPath) {
+    const el = document.querySelector(hash)
+    if (el) {
+      e.preventDefault()
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+  // 다른 페이지에 있으면 기본 동작으로 이동하고 ScrollToHash가 스크롤 처리
+}

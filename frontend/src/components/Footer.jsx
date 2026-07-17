@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import Container from './Container'
+import { handleHashNavClick } from './navItems'
+import useApiData from '../hooks/useApiData'
 import styles from './Footer.module.css'
 
 const FOOTER_NAV = [
@@ -11,12 +13,21 @@ const FOOTER_NAV = [
 ]
 
 export default function Footer() {
+  const { pathname } = useLocation()
+  // 매장 정보는 store_info 가 원천입니다. 도착 전에는 해당 줄을 비워 둡니다.
+  const { data: store } = useApiData('/api/store-info')
+
   return (
     <footer className={styles.footer}>
       <Container className={styles.inner}>
         <nav className={styles.nav}>
           {FOOTER_NAV.map((item) => (
-            <Link key={item.label} to={item.to} className={styles.navLink}>
+            <Link
+              key={item.label}
+              to={item.to}
+              onClick={(e) => handleHashNavClick(e, item.to, pathname)}
+              className={styles.navLink}
+            >
               {item.label}
             </Link>
           ))}
@@ -29,19 +40,21 @@ export default function Footer() {
           <span>개인정보처리방침</span>
         </div>
 
-        <div className={styles.brandBlock}>
-          <div className={styles.brandLine}>
-            <span className={styles.brandKo}>까치커피바</span>
-            <span className={styles.brandEn}>GGACHI COFFEE BAR</span>
+        {store && (
+          <div className={styles.brandBlock}>
+            <div className={styles.brandLine}>
+              <span className={styles.brandKo}>{store.brandNameKo}</span>
+              <span className={styles.brandEn}>{store.brandNameEn}</span>
+            </div>
+            <p className={styles.meta}>
+              {store.address}&nbsp;&nbsp;·&nbsp;&nbsp;전화 {store.phone}
+            </p>
+            <p className={styles.meta}>
+              영업시간 {store.openingHours}&nbsp;&nbsp;·&nbsp;&nbsp;Instagram {store.instagram}
+            </p>
+            <p className={styles.copyright}>© 2024 {store.brandNameEn}. ALL RIGHTS RESERVED</p>
           </div>
-          <p className={styles.meta}>
-            대전 유성구 대학로81번길 59 101호&nbsp;&nbsp;·&nbsp;&nbsp;전화 0507-1445-6303
-          </p>
-          <p className={styles.meta}>
-            영업시간 월–토 08:00–20:00 · 일요일 12:00–20:00&nbsp;&nbsp;·&nbsp;&nbsp;Instagram @GGachi_coffeebar
-          </p>
-          <p className={styles.copyright}>© 2024 GGACHI COFFEE BAR. ALL RIGHTS RESERVED</p>
-        </div>
+        )}
       </Container>
     </footer>
   )

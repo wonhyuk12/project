@@ -1,6 +1,8 @@
 .section {
   background: var(--bg-white);
   padding: 80px 0;
+  /* 해시 스크롤 시 고정 헤더에 가려지지 않도록 */
+  scroll-margin-top: var(--header-h);
 }
 
 .inner {

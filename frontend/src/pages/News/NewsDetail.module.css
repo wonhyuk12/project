@@ -55,7 +55,10 @@
 .image {
   width: 100%;
   height: 360px;
-  background: var(--surface-brown);
+  background-color: var(--surface-brown);
+  /* image_url 이 등록되면 인라인 background-image 로 채워집니다. */
+  background-size: cover;
+  background-position: center;
   border-radius: var(--radius-12);
 }
 

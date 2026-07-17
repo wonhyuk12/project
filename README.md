@@ -33,8 +33,11 @@ npm run preview      # 빌드 결과 미리보기
 
 화면: `/` 홈 · `/menu` 메뉴 · `/news` 소식 목록 · `/news/:id` 소식 상세 · `/subscribe` 정기구독 신청
 
-현재 프론트는 화면 확인이 목적이라 **정적 데이터**(`src/data/news.js`, `src/data/plans.js`)로 동작합니다.
-나중에 백엔드 API(`/api/...`)로 바꿔 연결할 수 있으며, Vite dev 서버가 `/api` 요청을 `localhost:5000`으로 프록시하도록 이미 설정돼 있습니다.
+프론트의 **모든 콘텐츠는 DB(API)에서** 옵니다. 프론트에 사본/더미 데이터는 두지 않습니다.
+Vite dev 서버가 `/api` 요청을 `localhost:5000`(Flask)으로 프록시합니다.
+
+> ⚠️ 따라서 **백엔드가 떠 있고 DB에 시드가 들어가 있어야** 화면에 내용이 보입니다.
+> 백엔드가 없으면 각 영역에 "콘텐츠를 불러오지 못했습니다" 안내가 표시됩니다.
 
 ---
 
@@ -65,25 +68,32 @@ python wsgi.py                   # http://localhost:5000
 
 동작 확인:
 ```bash
-curl http://localhost:5000/api/health   # {"status":"ok","databaseConfigured": false/true}
-curl http://localhost:5000/api/plans    # 정기구독 플랜 (DB 불필요)
+curl http://localhost:5000/api/health   # {"status":"ok","databaseConfigured": true}
 ```
 
-### 2-4. DB 초기화 (Supabase 연결 후)
-`.env`에 Supabase 접속 정보를 채운 뒤:
+### 2-4. DB 초기화 (콘텐츠 시드 삽입) — **처음 1회 필수**
+`.env`에 Supabase 접속 정보가 채워진 상태에서:
 ```bash
-flask --app wsgi init-db         # 테이블 생성 + 소식 시드 3건 삽입
-curl http://localhost:5000/api/news
+flask --app wsgi init-db         # 없는 테이블 생성 + 콘텐츠 시드 삽입
+curl http://localhost:5000/api/menu
 ```
+- 스키마의 원천은 `SCHEMA.md`의 DDL입니다. Supabase에 DDL을 이미 실행했다면 `init-db`는 **시드만** 채웁니다.
+- 이미 데이터가 있는 테이블은 건너뜁니다(중복 삽입 없음). 여러 번 실행해도 안전합니다.
 
 ### API 엔드포인트
-| 메서드 | 경로 | DB 필요 | 설명 |
-|---|---|---|---|
-| GET | `/api/health` | ✗ | 서버 상태 + DB 설정 여부 |
-| GET | `/api/plans` | ✗ | 정기구독 플랜 목록 |
-| GET | `/api/news` | ✓ | 소식 목록 |
-| GET | `/api/news/<id>` | ✓ | 소식 상세 |
-| POST | `/api/subscriptions` | ✓ | 정기구독 신청 저장 (데모) |
+| 메서드 | 경로 | DB 필요 | 화면 | 설명 |
+|---|---|---|---|---|
+| GET | `/api/health` | ✗ | — | 서버 상태 + DB 설정 여부 |
+| GET | `/api/store-info` | ✓ | 헤더·푸터·정보바 | 매장 기본 정보 |
+| GET | `/api/menu` | ✓ | 메뉴 | 카테고리 + 항목 |
+| GET | `/api/signatures` | ✓ | 홈 시그니처 | 큐레이션 (가격은 메뉴에서 조인) |
+| GET | `/api/plans` | ✓ | 홈 구독·신청 | 판매 중인 플랜 |
+| GET | `/api/news` | ✓ | 홈 소식·소식 목록 | 소식 목록(최신순) |
+| GET | `/api/news/<id>` | ✓ | 소식 상세 | 소식 상세 (**조회 시 views +1**) |
+| GET | `/api/guide` | ✓ | 홈 이용안내 | 이용안내 01~06 |
+| POST | `/api/subscriptions` | ✓ | — | 정기구독 신청 저장 (프론트 미연동) |
+
+가격은 **정수(원)** 로 응답하고 "5,500원" 포맷은 프론트가 합니다. 날짜도 ISO로 주고 프론트가 `2024.06.08`로 표시합니다.
 
 ---
 
@@ -91,9 +101,9 @@ curl http://localhost:5000/api/news
 
 | 시점 | 할 일 |
 |---|---|
-| **지금** | 프론트는 바로 실행 가능. 백엔드도 `.env` 없이 `/api/health`, `/api/plans`까지 확인 가능. |
-| **Supabase 준비되면** | ① [supabase.com](https://supabase.com)에서 프로젝트 생성 → ② Project Settings > Database에서 **연결 정보**(host / user / password / db name / port) 또는 **Connection string** 확보 → ③ `backend/.env`에 입력 → ④ `pip install -r requirements.txt`로 `psycopg2-binary` 설치 확인 → ⑤ `flask --app wsgi init-db` 실행 |
-| **API 연동 시** | 프론트의 정적 데이터(`data/*.js`)를 `fetch('/api/...')` 호출로 교체 |
+| **완료** | Supabase 프로젝트 생성 · 스키마(DDL) 적용 · `backend/.env` 접속정보 입력 · 프론트 전 화면 API 연동 |
+| **지금 할 일** | `cd backend` → 가상환경 + `pip install -r requirements.txt` → `flask --app wsgi init-db`(시드 삽입) → `python wsgi.py` → 다른 터미널에서 `cd frontend && npm run dev` |
+| **다음** | Checkout 폼 검증 + `POST /api/subscriptions` 연동, 행동 분석 로그(`analytics_*`) 수집, 실제 이미지(`image_url`) 등록 |
 
 > PostgreSQL을 로컬에 따로 설치할 필요는 없습니다. **Supabase가 클라우드 PostgreSQL을 제공**하므로, Supabase 프로젝트만 만들면 됩니다.
 > (로컬 PostgreSQL로 개발하고 싶다면, 그때 `.env`의 DB 값을 로컬 접속 정보로 바꾸면 됩니다.)

@@ -2,7 +2,7 @@
 
 브랜드 웹사이트 풀스택 프로젝트. 이 문서 하나로 온보딩하고 로컬에서 띄울 수 있도록 정리했다.
 
-- **상태**: 프론트엔드 UI 5개 화면 구현 완료 · 백엔드 API 스캐폴드 완료 · DB 미연결(연결 없이도 로컬 구동 가능)
+- **상태**: 프론트엔드 UI 5개 화면 구현 완료 · 백엔드 API 완료 · **Supabase 연결 완료(스키마 적용됨)** · 콘텐츠 전 화면 DB 연동 완료
 - **스택**: React (Vite) / Flask (SQLAlchemy) / Supabase (PostgreSQL)
 - **디자인 소스**: Figma (1440px 데스크톱)
 
@@ -11,18 +11,19 @@
 ## 1. TL;DR (5분 안에 띄우기)
 
 ```bash
-# 프론트엔드
-cd frontend && npm install && npm run dev      # http://localhost:5173
-
-# 백엔드 (다른 터미널)
+# 백엔드 먼저 (backend/.env 는 이미 채워져 있음)
 cd backend
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env
+flask --app wsgi init-db                        # 처음 1회: 콘텐츠 시드 삽입
 python wsgi.py                                  # http://localhost:5000
+
+# 프론트엔드 (다른 터미널)
+cd frontend && npm install && npm run dev       # http://localhost:5173
 ```
 
-DB 없이도 프론트는 완전히 동작하고, 백엔드는 `/api/health`·`/api/plans`까지 응답한다.
+콘텐츠는 전부 DB에서 오므로 **백엔드가 떠 있어야 화면에 내용이 보인다.**
+백엔드가 없으면 각 영역에 "콘텐츠를 불러오지 못했습니다" 안내가 뜬다(화면이 깨지지는 않음).
 
 ---
 
@@ -36,12 +37,16 @@ React (Vite dev server :5173)
   │   fetch('/api/...')  ── Vite proxy ──▶  Flask (:5000)
   │                                            │
   │                                            ▼
-  └── 현재는 정적 데이터로 자립 구동           SQLAlchemy ──▶ Supabase (PostgreSQL)
-      (src/data/*.js)
+  └── 콘텐츠 사본 없음                        SQLAlchemy ──▶ Supabase (PostgreSQL)
+      (로딩/실패 상태만 처리)                              (postgres 롤 = RLS 우회)
 ```
 
-- 프론트엔드는 **현재 API를 호출하지 않고 정적 데이터로 동작**한다. 화면/디자인 검수를 먼저 끝내기 위한 의도된 상태이며, 백엔드 연동 지점(`/api` 프록시)은 이미 뚫려 있다.
-- 백엔드는 **DB 연결 여부와 무관하게 기동**된다. DB가 필요 없는 엔드포인트는 항상 동작하고, 필요한 엔드포인트는 미설정 시 `503`과 안내 메시지를 반환한다.
+- **콘텐츠의 원천은 DB 하나뿐**이다. 프론트에는 더미/사본 데이터를 두지 않는다(`src/data/` 없음).
+  로딩·실패·빈 상태는 `components/DataState.jsx`가 화면에 그대로 드러낸다.
+- 백엔드는 DB 미설정이어도 기동되며, 콘텐츠 엔드포인트는 이때 `503`과 안내 메시지를 반환한다.
+- **RLS**: Supabase 테이블에 RLS가 켜져 있고 정책이 없다. 브라우저는 DB에 직접 접근하지 않고
+  항상 Flask를 거치며, Flask는 `postgres` 롤로 접속해 RLS를 우회한다. 그래서 publishable 키를
+  프론트에 노출할 필요가 없다.
 
 ---
 
@@ -78,8 +83,10 @@ ggachi/
 │       │   ├── tokens.css      # ★ 디자인 토큰 (색/폰트/간격/radius) — 단일 소스
 │       │   ├── fonts.js        # @fontsource import
 │       │   └── global.css      # 리셋 + 기본 스타일
-│       ├── components/         # 공통: Header, Footer, Container, PageHead, SectionHeading
-│       ├── data/               # 정적 데이터: news.js, plans.js
+│       ├── api/client.js       # fetch 헬퍼 (동일 경로 동시 요청 1회로 합침)
+│       ├── hooks/useApiData.js # API 조회 + 로딩/에러 상태
+│       ├── utils/              # format.js(가격·날짜), markdown.js(소식 본문)
+│       ├── components/         # 공통: Header, Footer, Container, PageHead, SectionHeading, DataState
 │       └── pages/
 │           ├── Home/           # Home + sections(Hero/Signature/Subscription/Notice/Guide)
 │           ├── Menu/
@@ -165,46 +172,54 @@ DB URI 결정 로직(`config.py`): `DATABASE_URL`이 있으면 그대로, 없고
 
 Base URL: `http://localhost:5000`
 
-| 메서드 | 경로 | DB | 설명 |
-|---|---|:--:|---|
-| GET | `/api/health` | ✗ | 상태 + `databaseConfigured` |
-| GET | `/api/plans` | ✗ | 정기구독 플랜 목록 |
-| GET | `/api/news` | ✓ | 소식 목록(최신순) |
-| GET | `/api/news/<id>` | ✓ | 소식 상세 |
-| POST | `/api/subscriptions` | ✓ | 정기구독 신청 저장 |
+| 메서드 | 경로 | DB | 쓰는 화면 | 설명 |
+|---|---|:--:|---|---|
+| GET | `/api/health` | ✗ | — | 상태 + `databaseConfigured` |
+| GET | `/api/store-info` | ✓ | Header · Footer · Hero 정보바 | 매장 기본 정보 |
+| GET | `/api/menu` | ✓ | Menu | 카테고리별 항목 (sort_order 순) |
+| GET | `/api/signatures` | ✓ | Home/Signature | 큐레이션 + `menu_items` 조인 가격 |
+| GET | `/api/plans` | ✓ | Home/Subscription · Checkout | `is_active` 플랜만 |
+| GET | `/api/news` | ✓ | Home/Notice · NewsList | 목록(최신순) + `summary` |
+| GET | `/api/news/<id>` | ✓ | NewsDetail | 상세 + `body`(Markdown), **views +1** |
+| GET | `/api/guide` | ✓ | Home/Guide | 이용안내 01~06 |
+| POST | `/api/subscriptions` | ✓ | (프론트 미연동) | 정기구독 신청 저장 |
+
+**응답 규약**: 가격은 정수(원), 날짜는 ISO 문자열. 표시 포맷(`5,500원` / `2024.06.08`)은 프론트(`utils/format.js`) 담당.
 
 `POST /api/subscriptions` 요청 예시:
 ```json
-{ "planId": "10", "name": "홍길동", "phone": "010-0000-0000", "payMethod": "kakao" }
+{ "planCode": "10", "name": "홍길동", "phone": "010-0000-0000", "payMethod": "kakao" }
 ```
-- `planId`는 `10 | 20 | 30`만 허용(그 외 `400`). DB 미설정 시 `503`.
+- `planCode`는 `subscription_plans.code`. 없는 코드/비활성 플랜이면 `400`.
+- `payMethod`는 `kakao | toss | card`, 이름·연락처 필수(미입력 시 `400`).
+- **금액은 요청 값을 믿지 않고** 서버가 플랜에서 읽어 `amount` 스냅샷으로 저장한다. `status`는 `pending`,
+  `start_date`/`end_date`는 `duration_days`로 계산.
 
 ---
 
 ## 8. 데이터 모델
 
-**News** (`news`)
-| 컬럼 | 타입 | 비고 |
-|---|---|---|
-| id | int | PK |
-| category | str(20) | 기본 '공지' |
-| title | str(200) | |
-| is_new | bool | 목록 NEW 배지 |
-| author | str(50) | 기본 '까치커피바' |
-| body | text | 상세 본문 |
-| views | int | 조회수 |
-| created_at | datetime | 작성일 |
+전체 DDL과 설계 근거는 **`SCHEMA.md`**(원천) / **`docs/DB_설명서.md`**(팀 공유용 해설)에 있다.
+`backend/app/models.py`는 그 DDL과 1:1로 대응한다.
 
-**Subscription** (`subscriptions`)
-| 컬럼 | 타입 | 비고 |
+| 테이블 | 역할 | 화면 |
 |---|---|---|
-| id | int | PK |
-| plan_id | str(10) | '10' \| '20' \| '30' |
-| name / phone | str | 신청자 |
-| pay_method | str(20) | 'kakao' \| 'toss' \| 'card' |
-| created_at | datetime | |
+| `store_info` | 매장 기본 정보 (단일 행, `CHECK (id = 1)`) | Header · Footer · Hero 정보바 |
+| `menu_categories` / `menu_items` | 메뉴 원천 데이터 | Menu |
+| `home_signatures` | 홈 큐레이션 (`menu_item_id` FK) | Home/Signature |
+| `subscription_plans` | 구독 플랜 | Home/Subscription · Checkout |
+| `subscriptions` | 신청 기록 (`amount` 스냅샷 + `status`) | (프론트 미연동) |
+| `news` | 소식 (`body`=Markdown) | Home/Notice · NewsList · NewsDetail |
+| `guide_items` | 이용안내 01~06 | Home/Guide |
+| `analytics_sessions` / `analytics_events` | 행동 로그 | (수집 미구현) |
 
-> 프론트의 `data/news.js`, `data/plans.js`와 필드가 대응된다. API 연동 시 이 둘을 `fetch`로 교체하면 된다.
+**연동 시 정한 것들**
+- **가격**: 정수(원)만 저장·전송. 포맷은 UI.
+- **Signature 가격**: `home_signatures`에 두지 않고 FK로 `menu_items.price`를 조인해서 쓴다(원본 1곳).
+- **Signature `no`('01'~'03')**: 저장값이 아니라 `sort_order` 순서에서 파생.
+- **소식 요약**: `news.summary` 컬럼에 저장한다. 본문 첫 문단에서 파생하지 않는다
+  (디자인의 카드 문구가 본문과 달라 파생으로는 재현되지 않음). 마이그레이션: `docs/sql/001_add_news_summary.sql`.
+- **2열 레이아웃**(메뉴·이용안내): API는 `sort_order` 순 평평한 배열만 주고, 앞 절반=좌열/뒤 절반=우열로 프론트가 나눈다.
 
 ---
 
@@ -237,7 +252,9 @@ Base URL: `http://localhost:5000`
 
 - 컴포넌트는 `PascalCase.jsx` + 동일명 `*.module.css` 페어.
 - CSS Module 클래스는 `camelCase`. 색/치수는 **토큰 변수만** 사용(브랜드 로고 색 등 일회성 예외는 인라인 + 주석).
-- 화면 간 공유 데이터는 `src/data/*.js` 한 곳에서 관리(중복 정의 금지).
+- 콘텐츠는 **DB가 유일한 원천**. 프론트에 더미/사본 데이터를 두지 않는다. 화면 문구 중 DB에 있는 값
+  (상호·주소·영업시간·가격·메뉴명 등)은 하드코딩 금지하고 API로 받는다.
+  (섹션 제목/설명 같은 순수 디자인 카피는 컴포넌트에 두어도 된다.)
 - 백엔드는 App Factory 패턴. 라우트는 `app/api/routes.py` 블루프린트. 모델 import는 DB 미설정 시 앱 기동을 막지 않도록 **함수 내부에서 지연 import**.
 
 ---
@@ -248,15 +265,16 @@ Base URL: `http://localhost:5000`
 
 | 우선순위 | 항목 | 내용 |
 |---|---|---|
-| High | 프론트–백엔드 연동 | 현재 정적 데이터. `data/*.js` → `/api` `fetch`로 교체, 로딩/에러 상태 처리 |
-| High | 폼 검증 | Checkout의 필수(*)는 시각 표시만. 제출 시 이름/연락처/결제수단 미입력 검증 없음(데모 alert) |
-| Medium | 해시 앵커 스크롤 | 헤더/푸터의 `/#signature`·`/#guide`가 다른 페이지에서 클릭 시 홈 이동만 되고 섹션 스크롤 안 됨. `ScrollToHash` 핸들러 필요 |
+| High | 폼 검증 + 신청 저장 | Checkout은 아직 데모 alert. `POST /api/subscriptions`는 서버 검증까지 준비돼 있으나 **프론트가 호출하지 않음** |
+| High | 행동 분석 수집 | `analytics_sessions`/`analytics_events` 테이블·모델만 있고 **수집 미구현**. `POST /api/events` + 프론트 `page_view` 전송 필요 (설계는 SCHEMA.md 3장) |
+| Medium | 페이지네이션 | 소식 목록이 항상 1페이지 고정. 건수 늘면 `limit`/`offset` 필요 |
 | Medium | 콘텐츠 미확정 | 소식 2·3번 본문이 `(상세 내용 준비 중입니다.)` placeholder |
-| Medium | 이미지/아이콘 | 디자인이 단색 도형이라 전부 placeholder. 실제 에셋 필요 |
-| Medium | 조회수 증가 | `GET /api/news/<id>` 시 `views` 증가 미구현 |
+| Medium | 이미지/아이콘 | `image_url` 연결은 끝났지만 실제 에셋 미등록이라 전부 placeholder 색상 |
+| Medium | 품절 표시 | `menu_items.is_sold_out`을 API는 주지만 디자인이 없어 화면에 미표시 |
+| Low | Markdown 파서 | `utils/markdown.js`는 문단·`- 목록`만 처리. 제목/링크/강조가 필요해지면 react-markdown 검토 |
 | Low | 반응형 | 1440 고정 + 가로 스크롤. 모바일 레이아웃 미포함(디자인 부재) |
 | Low | 접근성 | input `label` 연결, 색 대비 등 추후 점검 |
-| Low | 스키마 마이그레이션 | 현재 `create_all` 기반. 변경 이력관리(Flask-Migrate/Alembic) 미도입 |
+| Low | 스키마 마이그레이션 | `create_all` 기반. 변경 이력관리(Flask-Migrate/Alembic) 미도입 |
 
 ---
 

@@ -1,5 +1,8 @@
-Flask==3.0.3
+# Python 3.11 ~ 3.14 에서 설치되도록 맞춘 버전들.
+# psycopg2-binary 는 2.9.9 에 Python 3.13/3.14 용 휠이 없어(소스 빌드로 넘어가 실패)
+# cp313·cp314 휠이 있는 2.9.12 로 올림.
+Flask==3.1.2
 Flask-SQLAlchemy==3.1.1
-Flask-Cors==4.0.1
-python-dotenv==1.0.1
-psycopg2-binary==2.9.9
+Flask-Cors==6.0.5
+python-dotenv==1.2.2
+psycopg2-binary==2.9.12

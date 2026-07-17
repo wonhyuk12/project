@@ -90,6 +90,7 @@ Checkout 폼 제출 기록. 나머지는 전부 "보여주기"용이고 이것�
 | title | 제목 | |
 | is_new | NEW 배지 여부 | |
 | author | 작성자 | 까치커피바 |
+| summary | 한 줄 요약 | 홈 소식 카드 문구 |
 | body | 본문 (Markdown) | 상세 페이지 |
 | image_url | 대표 이미지 | 상세 상단 |
 | views | 조회수 | |

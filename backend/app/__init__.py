@@ -28,7 +28,17 @@ def create_app(config_class=Config):
         return jsonify(
             service="ggachi-coffee-bar-backend",
             databaseConfigured=app.config["DATABASE_CONFIGURED"],
-            endpoints=["/api/health", "/api/plans", "/api/news", "/api/news/<id>", "/api/subscriptions"],
+            endpoints=[
+                "/api/health",
+                "/api/store-info",
+                "/api/menu",
+                "/api/signatures",
+                "/api/plans",
+                "/api/news",
+                "/api/news/<id>",
+                "/api/guide",
+                "/api/subscriptions",
+            ],
         )
 
     _register_cli(app)
@@ -38,14 +48,22 @@ def create_app(config_class=Config):
 def _register_cli(app):
     @app.cli.command("init-db")
     def init_db():
-        """DB에 테이블 생성 + 시드 데이터 삽입. (backend/.env 설정 후 실행)"""
+        """없는 테이블 생성 + 콘텐츠 시드 삽입. (backend/.env 설정 후 실행)
+
+        스키마의 원천은 SCHEMA.md 의 DDL 입니다. Supabase 에 DDL 을 이미 실행했다면
+        create_all 은 아무 것도 만들지 않고 시드만 채웁니다.
+        """
         if not app.config["SQLALCHEMY_DATABASE_URI"]:
             click.echo("DB가 설정되지 않았습니다. 먼저 backend/.env 를 채우세요.")
             return
         # 모델을 import 해야 create_all 이 테이블을 인식합니다.
         from . import models  # noqa: F401
-        from .seed import seed_news
+        from .seed import seed_all
 
         db.create_all()
-        inserted = seed_news()
-        click.echo(f"테이블 생성 완료. 시드 소식 {inserted}건 삽입.")
+        inserted = seed_all()
+        if not inserted:
+            click.echo("테이블 확인 완료. 이미 데이터가 있어 시드는 건너뛰었습니다.")
+            return
+        summary = ", ".join(f"{table} {count}건" for table, count in inserted.items())
+        click.echo(f"테이블 확인 완료. 시드 삽입: {summary}")

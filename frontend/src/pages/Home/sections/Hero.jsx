@@ -1,15 +1,19 @@
 import { Link } from 'react-router-dom'
 import Header from '../../../components/Header'
 import Container from '../../../components/Container'
+import useApiData from '../../../hooks/useApiData'
 import styles from './Hero.module.css'
 
-const INFO_COLS = [
-  { label: 'LOCATION', value: '대전 유성구 대학로81번길 59 101호' },
-  { label: 'OPENING HOURS', value: '월–토 08:00–20:00 · 일요일 12:00–20:00' },
-  { label: 'FOLLOW US', value: '@GGachi_coffeebar' },
-]
-
 export default function Hero() {
+  // 정보바도 store_info 가 원천입니다(헤더·푸터와 동일 소스).
+  const { data: store } = useApiData('/api/store-info')
+
+  const infoCols = [
+    { label: 'LOCATION', value: store?.address },
+    { label: 'OPENING HOURS', value: store?.openingHours },
+    { label: 'FOLLOW US', value: store?.instagram },
+  ]
+
   return (
     <section className={styles.hero}>
       <Header variant="transparent" />
@@ -30,7 +34,7 @@ export default function Hero() {
       <div className={styles.infoBar}>
         <Container className={styles.infoInner}>
           <div className={styles.infoCols}>
-            {INFO_COLS.map((col) => (
+            {infoCols.map((col) => (
               <div key={col.label} className={styles.infoCol}>
                 <span className={styles.infoLabel}>{col.label}</span>
                 <span className={styles.infoValue}>{col.value}</span>
@@ -39,7 +43,7 @@ export default function Hero() {
           </div>
           <div className={styles.infoLinks}>
             <p>이용안내 | F&amp;A | 개인정보처리방침</p>
-            <p>© 2024 GGACHI COFFEE BAR.</p>
+            <p>© 2024 {store?.brandNameEn}.</p>
           </div>
         </Container>
       </div>
