@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { TopBar } from "@/components/ui/TopBar";
+import { Logo } from "@/components/ui/Logo";
 import { createClient } from "@/lib/supabase/client";
 import { createPaymentWidgets, type PaymentWidgets } from "@/lib/toss/client";
 import { PRO_PRICE_KRW } from "@/lib/plan/constants";
@@ -80,7 +81,8 @@ export default function BillingCheckoutPage() {
       <TopBar title="Pro 결제" backHref="/billing" />
 
       <div className="flex flex-col gap-4 px-4 pb-8">
-        <div className="rounded-xl border border-accent/30 bg-accent/10 px-3 py-2.5 text-center text-sm text-accent-light">
+        <div className="flex items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2.5 text-center text-sm text-accent-light">
+          <Logo size={16} />
           ChoreoHub Pro 30일 이용권 · ₩{PRO_PRICE_KRW.toLocaleString()}
         </div>
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { TopBar } from "@/components/ui/TopBar";
+import { Logo } from "@/components/ui/Logo";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { useProjectStore } from "@/lib/store";
@@ -22,7 +23,12 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col border-border sm:border-x">
       <TopBar
-        title="ChoreoHub"
+        title={
+          <span className="flex items-center gap-1.5">
+            <Logo size={20} />
+            ChoreoHub
+          </span>
+        }
         right={
           <>
             <Link

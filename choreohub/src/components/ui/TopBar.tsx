@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { useUserStore } from "@/lib/user/store";
 
 interface Props {
-  title: string;
+  title: ReactNode;
   backHref?: string;
   right?: ReactNode;
 }
