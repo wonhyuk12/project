@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 
 const FEATURES = [
   {
@@ -24,9 +25,7 @@ export default function OnboardingPage() {
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col justify-between border-border px-6 py-10 sm:border-x">
       <div>
         <div className="mb-10 flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-lg font-bold text-white">
-            C
-          </div>
+          <Logo size={36} />
           <span className="text-lg font-semibold tracking-tight">ChoreoHub</span>
         </div>
 
@@ -55,7 +54,7 @@ export default function OnboardingPage() {
 
       <div className="flex flex-col gap-2 pt-10">
         <Link href="/dashboard">
-          <Button className="w-full"></Button>
+          <Button className="w-full">시작하기</Button>
         </Link>
         <p className="text-center text-[11px] text-muted-2">
           로그인하지 않았다면 로그인 화면으로 이동해요

@@ -2,17 +2,12 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/ui/Logo";
+import { formatPhone } from "@/lib/phone";
 
 type Mode = "login" | "signup";
-
-/** 숫자만 남기고 010-1234-5678 형태로 보기 좋게 다시 끊어준다. */
-function formatPhone(raw: string): string {
-  const digits = raw.replace(/\D/g, "").slice(0, 11);
-  if (digits.length < 4) return digits;
-  if (digits.length < 8) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
-}
 
 function LoginForm() {
   const router = useRouter();
@@ -23,12 +18,18 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "signup-sent" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim() || !password) return;
+    if (mode === "signup" && !name.trim()) {
+      setStatus("error");
+      setErrorMessage("이름을 입력해주세요.");
+      return;
+    }
     if (mode === "signup" && phone.replace(/\D/g, "").length < 10) {
       setStatus("error");
       setErrorMessage("전화번호를 010-1234-5678 형식으로 입력해주세요.");
@@ -44,7 +45,7 @@ function LoginForm() {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-          data: { phone },
+          data: { phone, name: name.trim() },
         },
       });
       if (error) {
@@ -88,9 +89,7 @@ function LoginForm() {
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col justify-center border-border px-6 py-10 sm:border-x">
       <div className="mb-10 flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-lg font-bold text-white">
-          C
-        </div>
+        <Logo size={36} />
         <span className="text-lg font-semibold tracking-tight">ChoreoHub</span>
       </div>
 
@@ -155,14 +154,24 @@ function LoginForm() {
               className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
             />
             {mode === "signup" && (
-              <input
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(formatPhone(e.target.value))}
-                placeholder="전화번호 (010-1234-5678)"
-                className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
-              />
+              <>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="이름"
+                  className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
+                />
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  placeholder="전화번호 (010-1234-5678)"
+                  className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
+                />
+              </>
             )}
             <button
               type="submit"
@@ -181,6 +190,18 @@ function LoginForm() {
             <p className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-center text-xs text-red-300">
               {errorMessage}
             </p>
+          )}
+
+          {mode === "login" && (
+            <div className="mt-4 flex justify-center gap-3 text-[11px] text-muted-2">
+              <Link href="/login/find-email" className="underline hover:text-muted">
+                아이디 찾기
+              </Link>
+              <span>·</span>
+              <Link href="/login/forgot-password" className="underline hover:text-muted">
+                비밀번호 찾기
+              </Link>
+            </div>
           )}
 
           {mode === "signup" && (
