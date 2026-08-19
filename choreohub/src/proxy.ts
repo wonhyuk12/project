@@ -2,14 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Next.js 16부터 이 파일 컨벤션의 이름이 middleware → proxy로 바뀌었다(동작은 동일).
-const PUBLIC_PATHS = [
-  "/",
-  "/login",
-  "/login/find-email",
-  "/login/forgot-password",
-  "/login/reset-password",
-  "/auth/callback",
-];
+const PUBLIC_PATHS = ["/", "/login", "/login/find-email", "/login/forgot-password", "/auth/callback"];
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true;

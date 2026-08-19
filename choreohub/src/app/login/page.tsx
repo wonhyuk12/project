@@ -8,6 +8,7 @@ import { Logo } from "@/components/ui/Logo";
 import { formatPhone } from "@/lib/phone";
 
 type Mode = "login" | "signup";
+type Step = "form" | "verify-otp";
 
 function LoginForm() {
   const router = useRouter();
@@ -15,27 +16,29 @@ function LoginForm() {
   const next = searchParams.get("next") ?? "/dashboard";
 
   const [mode, setMode] = useState<Mode>("login");
+  const [step, setStep] = useState<Step>("form");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "signup-sent" | "error">("idle");
+  const [otp, setOtp] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim() || !password) return;
     if (mode === "signup" && !name.trim()) {
-      setStatus("error");
       setErrorMessage("이름을 입력해주세요.");
       return;
     }
     if (mode === "signup" && phone.replace(/\D/g, "").length < 10) {
-      setStatus("error");
       setErrorMessage("전화번호를 010-1234-5678 형식으로 입력해주세요.");
       return;
     }
-    setStatus("loading");
+    setSubmitting(true);
     setErrorMessage(null);
     const supabase = createClient();
 
@@ -43,13 +46,10 @@ function LoginForm() {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-          data: { phone, name: name.trim() },
-        },
+        options: { data: { phone, name: name.trim() } },
       });
+      setSubmitting(false);
       if (error) {
-        setStatus("error");
         setErrorMessage(
           error.message === "User already registered"
             ? "이미 가입된 이메일이에요 — 로그인해주세요."
@@ -59,12 +59,12 @@ function LoginForm() {
         // "Confirm email"이 켜져 있으면 이미 가입&인증된 이메일로 다시 가입해도 에러 없이
         // identities가 빈 배열인 가짜 user만 돌아온다(이메일 존재 여부를 숨기기 위한
         // Supabase의 의도된 동작) — 이 신호로 "이미 가입됨"을 판별한다.
-        setStatus("error");
         setErrorMessage("이미 가입된 이메일이에요 — 로그인해주세요.");
       } else if (!data.session) {
-        // 이메일 인증이 켜져 있으면(기본값) 가입 직후엔 세션이 없다 — 메일함에서
-        // 인증 링크를 눌러야 로그인할 수 있다.
-        setStatus("signup-sent");
+        // 이메일 인증이 켜져 있으면(기본값) 가입 직후엔 세션이 없다 — 메일로 받은 6자리
+        // 인증번호를 입력해야 로그인할 수 있다(링크 클릭 방식은 메일 서비스의 자동
+        // 미리보기가 토큰을 먼저 소비해버리는 문제가 있어 코드 입력 방식을 쓴다).
+        setStep("verify-otp");
       } else {
         router.push(next);
         router.refresh();
@@ -73,17 +73,48 @@ function LoginForm() {
     }
 
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    setSubmitting(false);
     if (error) {
-      setStatus("error");
-      setErrorMessage(
-        error.message === "Email not confirmed"
-          ? "이메일 인증이 아직 안 됐어요 — 가입할 때 받은 메일함의 인증 링크를 먼저 눌러주세요."
-          : error.message,
-      );
+      if (error.message === "Email not confirmed") {
+        setErrorMessage("이메일 인증이 아직 안 됐어요. 인증번호를 입력해서 완료해주세요.");
+        setStep("verify-otp");
+      } else {
+        setErrorMessage(error.message);
+      }
     } else {
       router.push(next);
       router.refresh();
     }
+  }
+
+  async function handleVerifyOtp(e: React.FormEvent) {
+    e.preventDefault();
+    if (otp.trim().length < 6) return;
+    setSubmitting(true);
+    setErrorMessage(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: otp.trim(),
+      type: "signup",
+    });
+    setSubmitting(false);
+    if (error) {
+      setErrorMessage("인증번호가 올바르지 않거나 만료됐어요 — 재전송 후 다시 시도해주세요.");
+      return;
+    }
+    router.push(next);
+    router.refresh();
+  }
+
+  async function handleResendOtp() {
+    if (!email.trim()) return;
+    setResending(true);
+    setResendMessage(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.resend({ type: "signup", email: email.trim() });
+    setResending(false);
+    setResendMessage(error ? "재전송에 실패했어요 — 잠시 후 다시 시도해주세요." : "인증번호를 다시 보냈어요.");
   }
 
   return (
@@ -93,17 +124,54 @@ function LoginForm() {
         <span className="text-lg font-semibold tracking-tight">ChoreoHub</span>
       </div>
 
-      {status === "signup-sent" ? (
+      {step === "verify-otp" ? (
         <>
-          <h1 className="mb-6 text-xl font-semibold tracking-tight">인증 메일을 보냈어요</h1>
-          <p className="rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent-light">
-            {email}로 인증 링크를 보냈어요. 메일함(스팸함도 확인해주세요)에서 링크를 눌러야
-            로그인할 수 있어요.
+          <h1 className="mb-2 text-xl font-semibold tracking-tight">인증번호를 입력해주세요</h1>
+          <p className="mb-6 text-sm text-muted">
+            {email}로 6자리 인증번호를 보냈어요. 메일함(스팸함도 확인해주세요)에서 확인해서
+            입력해주세요.
           </p>
+
+          <form onSubmit={handleVerifyOtp} className="flex flex-col gap-2">
+            <input
+              type="text"
+              inputMode="numeric"
+              required
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="인증번호 6자리"
+              className="rounded-xl border border-border bg-surface px-3 py-2.5 text-center text-lg tracking-[0.3em] text-foreground outline-none transition-colors focus:border-accent"
+            />
+            <button
+              type="submit"
+              disabled={submitting || otp.length < 6}
+              className="mt-1 rounded-xl bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-light disabled:opacity-50"
+            >
+              {submitting ? "확인 중…" : "인증하기"}
+            </button>
+          </form>
+
+          {errorMessage && (
+            <p className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-center text-xs text-red-300">
+              {errorMessage}
+            </p>
+          )}
+
+          <button
+            onClick={handleResendOtp}
+            disabled={resending}
+            className="mt-4 text-center text-xs text-muted underline disabled:opacity-50"
+          >
+            {resending ? "재전송 중…" : "인증번호 재전송"}
+          </button>
+          {resendMessage && <p className="mt-1 text-center text-xs text-muted-2">{resendMessage}</p>}
+
           <button
             onClick={() => {
-              setStatus("idle");
-              setMode("login");
+              setStep("form");
+              setOtp("");
+              setErrorMessage(null);
             }}
             className="mt-4 text-center text-xs text-muted underline"
           >
@@ -175,18 +243,14 @@ function LoginForm() {
             )}
             <button
               type="submit"
-              disabled={status === "loading"}
+              disabled={submitting}
               className="mt-1 rounded-xl bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-light disabled:opacity-50"
             >
-              {status === "loading"
-                ? "처리 중…"
-                : mode === "signup"
-                  ? "회원가입"
-                  : "로그인"}
+              {submitting ? "처리 중…" : mode === "signup" ? "회원가입" : "로그인"}
             </button>
           </form>
 
-          {status === "error" && errorMessage && (
+          {errorMessage && (
             <p className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-center text-xs text-red-300">
               {errorMessage}
             </p>
@@ -206,7 +270,7 @@ function LoginForm() {
 
           {mode === "signup" && (
             <p className="mt-6 text-center text-[11px] text-muted-2">
-              가입 후 메일 인증을 완료해야 로그인할 수 있어요.
+              가입 후 메일로 받는 인증번호를 입력해야 로그인할 수 있어요.
             </p>
           )}
         </>

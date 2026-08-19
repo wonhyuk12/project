@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
+import { AuthErrorBanner } from "@/components/auth/AuthErrorBanner";
 
 const FEATURES = [
   {
@@ -28,6 +29,8 @@ export default function OnboardingPage() {
           <Logo size={36} />
           <span className="text-lg font-semibold tracking-tight">ChoreoHub</span>
         </div>
+
+        <AuthErrorBanner />
 
         <h1 className="mb-3 text-3xl font-semibold leading-tight tracking-tight">
           안무를 기록하고,
