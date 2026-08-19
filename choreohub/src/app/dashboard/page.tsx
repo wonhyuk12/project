@@ -1,0 +1,80 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { TopBar } from "@/components/ui/TopBar";
+import { ProjectCard } from "@/components/dashboard/ProjectCard";
+import { LogoutButton } from "@/components/auth/LogoutButton";
+import { useProjectStore } from "@/lib/store";
+import { filterProjects, type ProjectFilter } from "@/lib/filterProjects";
+
+const TABS: { key: ProjectFilter; label: string }[] = [
+  { key: "all", label: "전체" },
+  { key: "in_progress", label: "진행중" },
+  { key: "completed", label: "완료" },
+];
+
+export default function DashboardPage() {
+  const projects = useProjectStore((s) => s.projects);
+  const [filter, setFilter] = useState<ProjectFilter>("all");
+  const filtered = filterProjects(projects, filter);
+
+  return (
+    <div className="mx-auto flex min-h-svh w-full max-w-md flex-col border-border sm:border-x">
+      <TopBar
+        title="ChoreoHub"
+        right={
+          <>
+            <Link
+              href="/billing"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-base leading-none text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+              aria-label="요금제"
+              title="요금제"
+            >
+              ✨
+            </Link>
+            <Link
+              href="/projects/new"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-xl leading-none text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+              aria-label="새 프로젝트"
+              title="새 프로젝트"
+            >
+              +
+            </Link>
+            <LogoutButton />
+          </>
+        }
+      />
+
+      <div className="flex gap-2 px-4 pb-3">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setFilter(t.key)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              filter === t.key
+                ? "bg-accent text-white"
+                : "border border-border bg-surface text-muted hover:bg-surface-hover"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 px-4 pb-8">
+        {filtered.length === 0 ? (
+          <p className="pt-10 text-center text-sm text-muted">
+            해당하는 프로젝트가 없어요
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {filtered.map((p) => (
+              <ProjectCard key={p.id} project={p} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
