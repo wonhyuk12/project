@@ -23,7 +23,7 @@ const FEATURES = [
 
 export default function OnboardingPage() {
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-md flex-col justify-between border-border px-6 py-10 sm:border-x">
+    <div className="mx-auto flex min-h-svh w-full max-w-md flex-col justify-between border-border px-6 py-10 sm:border-x md:my-10 md:min-h-0 md:max-w-2xl md:rounded-3xl md:border md:px-10 md:py-12 md:shadow-2xl md:shadow-black/40">
       <div>
         <div className="mb-10 flex items-center gap-2">
           <Logo size={36} />
@@ -42,7 +42,7 @@ export default function OnboardingPage() {
           피드백까지 받아보세요.
         </p>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 md:grid md:grid-cols-3 md:gap-6">
           {FEATURES.map((f) => (
             <div key={f.title} className="flex items-start gap-3">
               <span className="text-xl">{f.icon}</span>

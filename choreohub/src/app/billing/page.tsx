@@ -49,10 +49,10 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-md flex-col border-border sm:border-x">
+    <div className="mx-auto flex min-h-svh w-full max-w-md flex-col border-border sm:border-x md:max-w-3xl md:border-x-0">
       <TopBar title="요금제" backHref="/dashboard" />
 
-      <div className="flex flex-col gap-3 px-4 pb-8">
+      <div className="flex flex-col gap-3 px-4 pb-8 md:px-8">
         <p className="rounded-lg bg-accent/10 px-3 py-2 text-center text-xs text-accent-light">
           현재 플랜: {plan === "pro" ? "Pro" : "무료"}
           {plan === "pro" && proExpiresAt && ` · ${formatDate(proExpiresAt)}까지`}
@@ -71,6 +71,7 @@ export default function BillingPage() {
           </p>
         )}
 
+        <div className="grid gap-3 md:grid-cols-2 md:items-start">
         <div className="rounded-2xl border border-border bg-surface p-4">
           <p className="text-sm font-medium text-foreground">무료</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">₩0</p>
@@ -121,6 +122,7 @@ export default function BillingPage() {
           ) : (
             <p className="mt-4 text-center text-xs text-accent-light">현재 이용 중인 플랜이에요</p>
           )}
+        </div>
         </div>
 
         <p className="text-center text-[11px] text-muted-2">
