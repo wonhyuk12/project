@@ -23,6 +23,7 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col border-border sm:border-x">
       <TopBar
+        titleAlign="left"
         title={
           <span className="flex items-center gap-1.5">
             <Logo size={20} />
