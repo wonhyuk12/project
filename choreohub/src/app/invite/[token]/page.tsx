@@ -6,7 +6,15 @@ import { TopBar } from "@/components/ui/TopBar";
 import { createClient } from "@/lib/supabase/client";
 import { useProjectStore } from "@/lib/store";
 
-type Status = "loading" | "ready" | "already-member" | "joining" | "joined" | "invalid" | "error";
+type Status =
+  | "loading"
+  | "ready"
+  | "already-member"
+  | "self-owner"
+  | "joining"
+  | "joined"
+  | "invalid"
+  | "error";
 
 export default function InvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
@@ -40,6 +48,19 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
 
       setProjectId(invite.project_id);
       setProjectTitle(invite.project_title);
+
+      const { data: projectRow } = await supabase
+        .from("projects")
+        .select("user_id")
+        .eq("id", invite.project_id)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (projectRow?.user_id === user.id) {
+        setStatus("self-owner");
+        return;
+      }
 
       const { data: existing } = await supabase
         .from("project_members")
@@ -104,6 +125,21 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
               className="rounded-xl border border-border bg-surface px-4 py-2 text-sm text-muted hover:bg-surface-hover"
             >
               다시 시도
+            </button>
+          </>
+        )}
+
+        {status === "self-owner" && projectId && (
+          <>
+            <p className="text-sm text-muted">
+              &quot;{projectTitle}&quot;은 본인이 만든 프로젝트예요 — 이미 모든 권한이 있어서
+              따로 참여할 필요가 없어요. 다른 사람에게 이 링크를 공유해주세요.
+            </p>
+            <button
+              onClick={() => router.push(`/projects/${projectId}`)}
+              className="rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-light"
+            >
+              프로젝트로 이동
             </button>
           </>
         )}
