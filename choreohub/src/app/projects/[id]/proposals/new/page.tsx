@@ -57,6 +57,13 @@ export default function NewProposalPage({ params }: { params: Promise<{ id: stri
       setErrorMessage("담당 구간을 초 단위로 올바르게 입력해주세요 (끝이 시작보다 커야 해요).");
       return;
     }
+    // 실제로 올린 영상 길이를 넘어서는 구간은 의미가 없다(예: 9.6초짜리인데 20초까지로 입력).
+    if (start < 0 || end > extraction.durationSec) {
+      setErrorMessage(
+        `담당 구간은 올린 영상 길이(0~${Math.round(extraction.durationSec * 10) / 10}초) 안이어야 해요.`,
+      );
+      return;
+    }
 
     setSubmitting(true);
     setErrorMessage(null);
@@ -137,6 +144,7 @@ export default function NewProposalPage({ params }: { params: Promise<{ id: stri
             <input
               type="number"
               min={0}
+              max={extraction ? Math.round(extraction.durationSec * 10) / 10 : undefined}
               step={0.1}
               value={startSec}
               onChange={(e) => {
@@ -150,6 +158,7 @@ export default function NewProposalPage({ params }: { params: Promise<{ id: stri
             <input
               type="number"
               min={0}
+              max={extraction ? Math.round(extraction.durationSec * 10) / 10 : undefined}
               step={0.1}
               value={endSec}
               onChange={(e) => {
