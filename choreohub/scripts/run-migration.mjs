@@ -8,7 +8,8 @@ const envText = fs.readFileSync(path.join(rootDir, ".env.local"), "utf8");
 function envVar(name) {
   const m = envText.match(new RegExp(`^${name}=(.+)$`, "m"));
   if (!m) throw new Error(`${name} not found in .env.local`);
-  return m[1].trim();
+  // `vercel env pull`은 값을 큰따옴표로 감싸서 쓴다 — 있으면 벗겨낸다.
+  return m[1].trim().replace(/^"(.*)"$/, "$1");
 }
 
 const supabaseUrl = envVar("SUPABASE_URL");
