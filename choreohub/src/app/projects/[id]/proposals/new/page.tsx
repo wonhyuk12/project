@@ -21,9 +21,28 @@ export default function NewProposalPage({ params }: { params: Promise<{ id: stri
   const [note, setNote] = useState("");
   const [startSec, setStartSec] = useState("");
   const [endSec, setEndSec] = useState("");
+  const [rangeTouched, setRangeTouched] = useState(false);
   const [extraction, setExtraction] = useState<ExtractionResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // 영상 처리가 끝나면 실제 길이를 이미 알고 있으니 "전체 구간"으로 자동 채운다 — 직접
+  // 초를 입력하게 하면 실제 길이와 안 맞는 값(예: 10초짜리인데 0.2~1.3)이 나오기 쉽다.
+  // 사용자가 이미 손으로 구간을 좁혀놨으면(rangeTouched) 덮어쓰지 않는다.
+  function handleExtracted(result: ExtractionResult) {
+    setExtraction(result);
+    if (!rangeTouched) {
+      setStartSec("0");
+      setEndSec(String(Math.round(result.durationSec * 10) / 10));
+    }
+  }
+
+  function resetToFullRange() {
+    if (!extraction) return;
+    setRangeTouched(false);
+    setStartSec("0");
+    setEndSec(String(Math.round(extraction.durationSec * 10) / 10));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -86,7 +105,7 @@ export default function NewProposalPage({ params }: { params: Promise<{ id: stri
       <TopBar title={`${project.title} · 제안하기`} backHref={`/projects/${projectId}/proposals`} />
 
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-5 px-4 pb-8">
-        <PoseExtractor onExtracted={setExtraction} />
+        <PoseExtractor onExtracted={handleExtracted} />
 
         <div>
           <label htmlFor="title" className="mb-1.5 block text-xs font-medium text-muted">
@@ -102,14 +121,28 @@ export default function NewProposalPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-muted">담당 구간(초 단위)</label>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="text-xs font-medium text-muted">담당 구간(초 단위)</label>
+            {extraction && (
+              <button
+                type="button"
+                onClick={resetToFullRange}
+                className="text-[11px] text-accent-light underline"
+              >
+                전체 구간으로
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <input
               type="number"
               min={0}
               step={0.1}
               value={startSec}
-              onChange={(e) => setStartSec(e.target.value)}
+              onChange={(e) => {
+                setRangeTouched(true);
+                setStartSec(e.target.value);
+              }}
               placeholder="시작(초)"
               className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
             />
@@ -119,11 +152,20 @@ export default function NewProposalPage({ params }: { params: Promise<{ id: stri
               min={0}
               step={0.1}
               value={endSec}
-              onChange={(e) => setEndSec(e.target.value)}
+              onChange={(e) => {
+                setRangeTouched(true);
+                setEndSec(e.target.value);
+              }}
               placeholder="끝(초)"
               className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
             />
           </div>
+          {extraction && !rangeTouched && (
+            <p className="mt-1 text-[11px] text-muted-2">
+              영상 전체 길이({Math.round(extraction.durationSec * 10) / 10}초)로 자동 채웠어요 —
+              일부 구간만 제안하려면 숫자를 직접 바꾸세요.
+            </p>
+          )}
         </div>
 
         <div>
