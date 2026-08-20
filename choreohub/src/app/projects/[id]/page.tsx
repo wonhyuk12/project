@@ -74,7 +74,19 @@ export default function ProjectDetailPage({
         }
       />
 
-      <div className={`mx-4 h-32 rounded-2xl bg-gradient-to-br ${project.thumbnailColor}`} />
+      <div className="mx-4">
+        {versions.length > 0 ? (
+          <video
+            key={versions[0].id}
+            src={versions[0].videoUrl}
+            controls
+            playsInline
+            className="aspect-video w-full rounded-2xl border border-border bg-black object-cover"
+          />
+        ) : (
+          <div className={`h-32 rounded-2xl bg-gradient-to-br ${project.thumbnailColor}`} />
+        )}
+      </div>
 
       <div className="flex flex-col gap-4 px-4 py-5">
         <div className="flex items-center gap-2">
