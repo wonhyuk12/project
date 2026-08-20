@@ -346,7 +346,12 @@ export function compareLiveFrame(
     const diff = Math.abs(a - b);
     if (diff > worstDiff) {
       worstDiff = diff;
-      worstJoint = { joint: JOINT_NAMES[i], avgDiffDeg: round1(diff) };
+      worstJoint = {
+        joint: JOINT_NAMES[i],
+        avgDiffDeg: round1(diff),
+        refDeg: round1(b),
+        userDeg: round1(a),
+      };
     }
   }
 
@@ -361,6 +366,8 @@ function computeWorstJoints(
   range: TimeRange,
 ): WorstJoint[] {
   const sums = new Array(JOINT_NAMES.length).fill(0);
+  const userSums = new Array(JOINT_NAMES.length).fill(0);
+  const refSums = new Array(JOINT_NAMES.length).fill(0);
   const counts = new Array(JOINT_NAMES.length).fill(0);
 
   for (const [ui, ri] of path) {
@@ -373,19 +380,33 @@ function computeWorstJoints(
       const bv = ra[k];
       if (av == null || bv == null) continue;
       sums[k] += Math.abs(av - bv);
+      userSums[k] += av;
+      refSums[k] += bv;
       counts[k] += 1;
     }
   }
 
   const withValues: WorstJoint[] = [];
   for (let k = 0; k < JOINT_NAMES.length; k++) {
-    if (counts[k] > 0) withValues.push({ joint: JOINT_NAMES[k], avgDiffDeg: sums[k] / counts[k] });
+    if (counts[k] > 0) {
+      withValues.push({
+        joint: JOINT_NAMES[k],
+        avgDiffDeg: sums[k] / counts[k],
+        userDeg: userSums[k] / counts[k],
+        refDeg: refSums[k] / counts[k],
+      });
+    }
   }
 
   return withValues
     .sort((a, b) => b.avgDiffDeg - a.avgDiffDeg)
     .slice(0, 3)
-    .map((j) => ({ joint: j.joint, avgDiffDeg: round1(j.avgDiffDeg) }));
+    .map((j) => ({
+      joint: j.joint,
+      avgDiffDeg: round1(j.avgDiffDeg),
+      userDeg: round1(j.userDeg),
+      refDeg: round1(j.refDeg),
+    }));
 }
 
 export interface SegmentDef {

@@ -1,6 +1,11 @@
 export interface WorstJoint {
   joint: string;
   avgDiffDeg: number;
+  /** 원본(레퍼런스) 영상의 실제 관절 각도 평균(도) — 화면에 "레퍼런스는 이런데 내 영상은
+   *  이렇다"처럼 두 값을 나란히 보여주기 위함. avgDiffDeg만으론 값이 뭘 뜻하는지 알기 어렵다. */
+  refDeg: number;
+  /** 내 영상의 실제 관절 각도 평균(도). */
+  userDeg: number;
 }
 
 export interface CompareSegment {

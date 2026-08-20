@@ -175,10 +175,14 @@ export default function CompareResultPage({
                   </span>
                 </div>
                 {seg.worstJoints.length > 0 && (
-                  <p className="mt-1 text-[11px] text-muted-2">
-                    차이 큰 관절:{" "}
-                    {seg.worstJoints.map((j) => `${j.joint}(${j.avgDiffDeg}°)`).join(", ")}
-                  </p>
+                  <div className="mt-1.5 flex flex-col gap-0.5">
+                    <p className="text-[11px] text-muted-2">차이 큰 관절</p>
+                    {seg.worstJoints.map((j) => (
+                      <p key={j.joint} className="text-[11px] text-muted-2">
+                        {j.joint}: 레퍼런스 {j.refDeg}° → 내 영상 {j.userDeg}° (차이 {j.avgDiffDeg}°)
+                      </p>
+                    ))}
+                  </div>
                 )}
                 {seg.lowVisibility && (
                   <p className="mt-1 text-[11px] text-amber-300">

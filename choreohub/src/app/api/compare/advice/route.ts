@@ -33,7 +33,7 @@ interface SegmentInput {
   start: number;
   end: number;
   score?: number;
-  worstJoints?: { joint: string; avgDiffDeg: number }[];
+  worstJoints?: { joint: string; avgDiffDeg: number; refDeg?: number; userDeg?: number }[];
 }
 
 interface RangeInput {
@@ -108,8 +108,13 @@ function buildNumericPrompt(segments: SegmentInput[]): string {
   const lines = segments
     .map((s, i) => {
       const joints =
-        (s.worstJoints ?? []).map((j) => `${j.joint}(${j.avgDiffDeg}도 차이)`).join(", ") ||
-        "특별히 두드러지는 관절 없음";
+        (s.worstJoints ?? [])
+          .map((j) =>
+            j.refDeg != null && j.userDeg != null
+              ? `${j.joint}(레퍼런스 ${j.refDeg}도 → 사용자 ${j.userDeg}도, 차이 ${j.avgDiffDeg}도)`
+              : `${j.joint}(${j.avgDiffDeg}도 차이)`,
+          )
+          .join(", ") || "특별히 두드러지는 관절 없음";
       return `${i + 1}. "${s.label ?? "구간"}" (${s.start.toFixed(1)}초~${s.end.toFixed(1)}초): 일치율 ${s.score ?? "?"}%, 차이가 큰 관절: ${joints}`;
     })
     .join("\n");

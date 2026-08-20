@@ -259,10 +259,14 @@ export default function RangeComparePage({
                   </p>
                 )}
                 {p.worstJoints.length > 0 && (
-                  <p className="mt-1 text-[11px] text-muted-2">
-                    차이 큰 관절:{" "}
-                    {p.worstJoints.map((j) => `${j.joint}(${j.avgDiffDeg}°)`).join(", ")}
-                  </p>
+                  <div className="mt-1.5 flex flex-col gap-0.5">
+                    <p className="text-[11px] text-muted-2">차이 큰 관절</p>
+                    {p.worstJoints.map((j) => (
+                      <p key={j.joint} className="text-[11px] text-muted-2">
+                        {j.joint}: 레퍼런스 {j.refDeg}° → 내 영상 {j.userDeg}° (차이 {j.avgDiffDeg}°)
+                      </p>
+                    ))}
+                  </div>
                 )}
                 <RangePairAdvice
                   runId={run.id}
