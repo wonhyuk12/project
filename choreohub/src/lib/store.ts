@@ -188,7 +188,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       })
       .select()
       .single();
-    if (error || !data) throw error ?? new Error("버전 저장에 실패했어요.");
+    // Supabase 쿼리 에러는 Error 인스턴스가 아닌 평범한 객체라 그냥 던지면 호출부의
+    // `err instanceof Error` 체크에 안 걸려서 실제 원인(RLS 거부 등)이 가려진다.
+    if (error || !data) throw new Error(error?.message ?? "버전 저장에 실패했어요.");
 
     const videoUrl = await getVideoUrl(supabase, videoPath);
     const version = rowToVersion(data as VersionRow, videoUrl);

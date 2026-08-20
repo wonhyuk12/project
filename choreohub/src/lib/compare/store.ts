@@ -171,7 +171,7 @@ export const useCompareStore = create<CompareState>((set, get) => ({
       })
       .select()
       .single();
-    if (error || !data) throw error ?? new Error("비교 결과 저장에 실패했어요.");
+    if (error || !data) throw new Error(error?.message ?? "비교 결과 저장에 실패했어요.");
 
     const run = await rowToRun(supabase, data as CompareRunRow);
     set((state) => ({ runs: [run, ...state.runs] }));

@@ -10,6 +10,7 @@ import { SAMPLE_FPS } from "@/lib/poseExtraction";
 import { createClient } from "@/lib/supabase/client";
 import { fetchProfileNames, displayName, type ProfileNameInfo } from "@/lib/profiles";
 import { PoseDataViewer } from "@/components/project/PoseDataViewer";
+import { useProjectPermission } from "@/lib/useProjectPermission";
 
 export default function VersionViewerPage({
   params,
@@ -20,6 +21,7 @@ export default function VersionViewerPage({
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
   const version = useProjectStore((s) => s.versions.find((v) => v.id === versionId));
   const allRuns = useCompareStore((s) => s.runs);
+  const { canEdit } = useProjectPermission(projectId, project?.ownerId);
 
   const [uploader, setUploader] = useState<ProfileNameInfo | undefined>();
 
@@ -82,12 +84,14 @@ export default function VersionViewerPage({
           🆚 비교 분석 시작
         </Link>
 
-        <Link
-          href={`/projects/${projectId}/versions/${version.id}/live`}
-          className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-sm text-muted transition-colors hover:bg-surface-hover"
-        >
-          🎥 이 영상 보면서 실시간 연습
-        </Link>
+        {canEdit && (
+          <Link
+            href={`/projects/${projectId}/versions/${version.id}/live`}
+            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-sm text-muted transition-colors hover:bg-surface-hover"
+          >
+            🎥 이 영상 보면서 실시간 연습
+          </Link>
+        )}
 
         <Link
           href={`/projects/${projectId}/formation`}

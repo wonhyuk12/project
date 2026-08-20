@@ -120,7 +120,7 @@ export const useProposalStore = create<ProposalState>((set, get) => ({
       })
       .select()
       .single();
-    if (error || !data) throw error ?? new Error("제안 저장에 실패했어요.");
+    if (error || !data) throw new Error(error?.message ?? "제안 저장에 실패했어요.");
 
     const proposal = await rowToProposal(supabase, data as ProposalRow);
     set((state) => ({ proposals: [proposal, ...state.proposals] }));
