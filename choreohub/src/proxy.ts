@@ -18,6 +18,10 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  // CORS preflight(브라우저가 크로스 오리진 API 호출 전 자동으로 보냄)는 쿠키/인증이 없는
+  // 게 정상이라 로그인 리다이렉트로 가로채면 안 된다 — 무조건 바로 통과시킨다.
+  if (request.method === "OPTIONS") return NextResponse.next();
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

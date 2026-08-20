@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
+import { CORS_HEADERS } from "@/lib/cors";
 
 // 영상 업로드(용량 큼) + Gemini Files API 폴링이 있어서 Node 런타임이 필요하다.
 export const runtime = "nodejs";
@@ -136,7 +137,20 @@ function buildDescriptivePrompt(refTitle: string): string {
 사용자 영상 타임라인 기준으로 눈에 띄게 다른 구간들을 찾아서, 각각 whatsWrong(무엇이 다른지), why(왜 그런 차이가 나는 것 같은지), howToFix(교정 방법)를 한국어로 서술하고, overallComment에 전체 총평을 3문장 이내로 작성하세요.`;
 }
 
+export function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
+/** chisung42 프론트(choreohub.vercel.app)는 다른 오리진이라 매 응답에 CORS 헤더를 붙여야
+ *  한다 — 아래 실제 로직(handlePost)의 return 지점마다 손대는 대신, 응답을 한 번 감싸서
+ *  헤더를 일괄로 붙인다. */
 export async function POST(req: NextRequest) {
+  const res = await handlePost(req);
+  for (const [key, value] of Object.entries(CORS_HEADERS)) res.headers.set(key, value);
+  return res;
+}
+
+async function handlePost(req: NextRequest): Promise<NextResponse> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(

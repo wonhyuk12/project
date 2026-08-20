@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CORS_HEADERS } from "@/lib/cors";
 
 export interface YoutubeSearchResult {
   videoId: string;
@@ -7,17 +8,21 @@ export interface YoutubeSearchResult {
   thumbnailUrl: string;
 }
 
+export function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim();
   if (!q) {
-    return NextResponse.json({ error: "검색어가 필요해요." }, { status: 400 });
+    return NextResponse.json({ error: "검색어가 필요해요." }, { status: 400, headers: CORS_HEADERS });
   }
 
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
       { error: "서버에 YOUTUBE_API_KEY가 설정되지 않았어요." },
-      { status: 503 },
+      { status: 503, headers: CORS_HEADERS },
     );
   }
 
@@ -35,7 +40,10 @@ export async function GET(req: NextRequest) {
   try {
     res = await fetch(url.toString());
   } catch {
-    return NextResponse.json({ error: "유튜브 검색 요청에 실패했어요." }, { status: 502 });
+    return NextResponse.json(
+      { error: "유튜브 검색 요청에 실패했어요." },
+      { status: 502, headers: CORS_HEADERS },
+    );
   }
 
   if (!res.ok) {
@@ -43,7 +51,7 @@ export async function GET(req: NextRequest) {
     console.error("[youtube search] failed", res.status, body);
     return NextResponse.json(
       { error: "유튜브 검색 중 오류가 발생했어요." },
-      { status: res.status === 403 ? 503 : 502 },
+      { status: res.status === 403 ? 503 : 502, headers: CORS_HEADERS },
     );
   }
 
@@ -58,5 +66,5 @@ export async function GET(req: NextRequest) {
         item.snippet.thumbnails.medium?.url ?? item.snippet.thumbnails.default?.url ?? "",
     }));
 
-  return NextResponse.json({ results });
+  return NextResponse.json({ results }, { headers: CORS_HEADERS });
 }
