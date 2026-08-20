@@ -290,6 +290,20 @@ export function LivePracticeSession({
     finishSession();
   }
 
+  /** 실패했을 때 처음부터 다시 찍을 수 있게 한다 — 카메라 스트림은 이미 정리됐을 수 있어서
+   *  "카메라 켜기"부터 다시 밟게 idle로 되돌린다(모델은 싱글턴 캐시라 다시 로딩되진 않음). */
+  function retryFromError() {
+    finishedRef.current = false;
+    liveFramesRef.current = [];
+    chunksRef.current = [];
+    scoreWindowRef.current = [];
+    setErrorMessage(null);
+    setLiveScore(0);
+    setProgress(0);
+    setPhrase("");
+    setStatus("idle");
+  }
+
   if (status === "unsupported") {
     return (
       <p className="mx-4 mt-10 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-3 text-center text-sm text-red-300">
@@ -339,6 +353,15 @@ export function LivePracticeSession({
         <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-center text-xs text-red-300">
           {errorMessage}
         </p>
+      )}
+
+      {status === "error" && (
+        <button
+          onClick={retryFromError}
+          className="rounded-xl bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-light"
+        >
+          🔁 다시 촬영하기
+        </button>
       )}
 
       {status === "idle" && (
