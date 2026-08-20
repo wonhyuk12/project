@@ -25,7 +25,9 @@ export default function ForgotPasswordPage() {
     setSubmitting(true);
     setErrorMessage(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    });
     setSubmitting(false);
     if (error) {
       setErrorMessage("잠시 후 다시 시도해주세요.");
@@ -39,7 +41,9 @@ export default function ForgotPasswordPage() {
     setResending(true);
     setResendMessage(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    });
     setResending(false);
     setResendMessage(error ? "재전송에 실패했어요 — 잠시 후 다시 시도해주세요." : "인증번호를 다시 보냈어요.");
   }

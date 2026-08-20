@@ -27,10 +27,8 @@ export function RangePairAdvice({
     try {
       const form = new FormData();
       form.append("mode", "numeric");
-      const userBlob = await (await fetch(userVideoUrl)).blob();
-      const refBlob = await (await fetch(refVideoUrl)).blob();
-      form.append("userVideo", userBlob, "user.mp4");
-      form.append("refVideo", refBlob, "ref.mp4");
+      form.append("userVideoUrl", userVideoUrl);
+      form.append("refVideoUrl", refVideoUrl);
       form.append(
         "segments",
         JSON.stringify([
@@ -47,7 +45,12 @@ export function RangePairAdvice({
       form.append("refRange", JSON.stringify(pair.refRange));
 
       const res = await fetch("/api/compare/advice", { method: "POST", body: form });
-      const data = await res.json();
+      let data: { error?: string; segments?: { whatsWrong: string; why: string; howToFix: string }[] };
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(`서버 오류가 발생했어요 (${res.status}).`);
+      }
       if (!res.ok) throw new Error(data.error ?? "AI 조언 생성에 실패했어요.");
 
       const first = data.segments?.[0];

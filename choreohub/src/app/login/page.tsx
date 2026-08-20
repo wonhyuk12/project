@@ -46,7 +46,10 @@ function LoginForm() {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: { data: { phone, name: name.trim() } },
+        options: {
+          data: { phone, name: name.trim() },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
       setSubmitting(false);
       if (error) {
@@ -112,7 +115,11 @@ function LoginForm() {
     setResending(true);
     setResendMessage(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.resend({ type: "signup", email: email.trim() });
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
     setResending(false);
     setResendMessage(error ? "재전송에 실패했어요 — 잠시 후 다시 시도해주세요." : "인증번호를 다시 보냈어요.");
   }

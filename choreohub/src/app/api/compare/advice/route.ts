@@ -61,6 +61,32 @@ function toOffsetMetadata(range: RangeInput | null) {
   };
 }
 
+/** 영상은 이미 Supabase Storage(signed URL)에 있으므로, 브라우저가 통째로 받았다가 우리
+ *  서버로 재업로드하는 대신 서버가 직접 이 URL에서 받아온다 — 그래야 Function 요청 본문
+ *  크기 제한(현재 100MB)에 영상 용량이 걸리지 않는다.
+ *  임의 URL을 서버가 fetch하면 SSRF 위험이 있으므로, 우리 Supabase 프로젝트 호스트로만 제한한다. */
+const ALLOWED_VIDEO_HOST = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname;
+
+function assertAllowedVideoUrl(raw: string): URL {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error("영상 URL이 올바르지 않아요.");
+  }
+  if (url.protocol !== "https:" || url.hostname !== ALLOWED_VIDEO_HOST) {
+    throw new Error("허용되지 않은 영상 URL이에요.");
+  }
+  return url;
+}
+
+async function fetchVideoBlob(rawUrl: string): Promise<Blob> {
+  const url = assertAllowedVideoUrl(rawUrl);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("영상을 불러오지 못했어요.");
+  return res.blob();
+}
+
 async function uploadAndWaitActive(ai: GoogleGenAI, blob: Blob, mimeType: string) {
   let file = await ai.files.upload({ file: blob, config: { mimeType } });
   const startedAt = Date.now();
@@ -145,10 +171,10 @@ export async function POST(req: NextRequest) {
   }
 
   const mode = formData.get("mode");
-  const userVideo = formData.get("userVideo");
+  const userVideoUrl = formData.get("userVideoUrl");
   const segmentsRaw = formData.get("segments");
 
-  if (!(userVideo instanceof Blob) || typeof segmentsRaw !== "string") {
+  if (typeof userVideoUrl !== "string" || typeof segmentsRaw !== "string") {
     return NextResponse.json({ error: "필수 데이터가 빠졌어요." }, { status: 400 });
   }
 
@@ -162,7 +188,8 @@ export async function POST(req: NextRequest) {
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const userFile = await uploadAndWaitActive(ai, userVideo, userVideo.type || "video/mp4");
+    const userBlob = await fetchVideoBlob(userVideoUrl);
+    const userFile = await uploadAndWaitActive(ai, userBlob, userBlob.type || "video/mp4");
     const parts: Array<Record<string, unknown>> = [];
 
     if (mode === "descriptive") {
@@ -180,11 +207,12 @@ export async function POST(req: NextRequest) {
       });
       parts.push({ fileData: { fileUri: refYoutubeUrl }, videoMetadata: { fps: 4 } });
     } else {
-      const refVideo = formData.get("refVideo");
-      if (!(refVideo instanceof Blob)) {
+      const refVideoUrl = formData.get("refVideoUrl");
+      if (typeof refVideoUrl !== "string") {
         return NextResponse.json({ error: "레퍼런스 영상이 없어요." }, { status: 400 });
       }
-      const refFile = await uploadAndWaitActive(ai, refVideo, refVideo.type || "video/mp4");
+      const refBlob = await fetchVideoBlob(refVideoUrl);
+      const refFile = await uploadAndWaitActive(ai, refBlob, refBlob.type || "video/mp4");
       const userRange = parseRange(formData.get("userRange"));
       const refRange = parseRange(formData.get("refRange"));
       parts.push({ text: buildNumericPrompt(segments) });

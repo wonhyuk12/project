@@ -46,15 +46,13 @@ export function AdviceCard(props: AdviceCardProps) {
     setError(null);
     try {
       const form = new FormData();
-      const userBlob = await (await fetch(props.userVideoUrl)).blob();
-      form.append("userVideo", userBlob, "user.mp4");
+      form.append("userVideoUrl", props.userVideoUrl);
       form.append("mode", props.mode);
 
       if (props.mode === "numeric") {
         const worst3 = [...props.segments].sort((a, b) => a.score - b.score).slice(0, 3);
         form.append("segments", JSON.stringify(worst3));
-        const refBlob = await (await fetch(props.refVideoUrl)).blob();
-        form.append("refVideo", refBlob, "ref.mp4");
+        form.append("refVideoUrl", props.refVideoUrl);
       } else {
         form.append("segments", "[]");
         form.append("refYoutubeUrl", props.refYoutubeUrl);
@@ -62,7 +60,12 @@ export function AdviceCard(props: AdviceCardProps) {
       }
 
       const res = await fetch("/api/compare/advice", { method: "POST", body: form });
-      const data = await res.json();
+      let data: { error?: string } & Partial<AdviceContent>;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(`서버 오류가 발생했어요 (${res.status}).`);
+      }
       if (!res.ok) throw new Error(data.error ?? "AI 조언 생성에 실패했어요.");
 
       if (props.mode === "numeric") {
