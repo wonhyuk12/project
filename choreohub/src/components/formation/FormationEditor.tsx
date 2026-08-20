@@ -22,6 +22,12 @@ export function FormationEditor({ projectId }: { projectId: string }) {
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [poseVersionId, setPoseVersionId] = useState(versions[0]?.id ?? "");
 
+  // 영상에서 실제로 감지된 최대 인원수 — 그리드 도구의 기본값으로 쓴다(하드코딩된 12명 대신).
+  const detectedMaxPersons = Math.max(
+    0,
+    ...versions.flatMap((v) => v.poseData.map((f) => f.persons.length)),
+  );
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (!selectedDancerId || !section) return;
@@ -165,6 +171,7 @@ export function FormationEditor({ projectId }: { projectId: string }) {
         colSpacing={colSpacing}
         onRowSpacingChange={setRowSpacing}
         onColSpacingChange={setColSpacing}
+        defaultCount={detectedMaxPersons}
       />
       <DancerTable
         projectId={projectId}

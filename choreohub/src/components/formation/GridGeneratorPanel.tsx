@@ -10,6 +10,8 @@ interface Props {
   colSpacing: number;
   onRowSpacingChange: (v: number) => void;
   onColSpacingChange: (v: number) => void;
+  /** 영상에서 실제로 감지된 인원수 — 없으면(0명) 1명으로 시작한다. */
+  defaultCount?: number;
 }
 
 export function GridGeneratorPanel({
@@ -19,11 +21,15 @@ export function GridGeneratorPanel({
   colSpacing,
   onRowSpacingChange,
   onColSpacingChange,
+  defaultCount,
 }: Props) {
   const applyGridFormation = useFormationStore((s) => s.applyGridFormation);
-  const [rows, setRows] = useState(3);
-  const [cols, setCols] = useState(4);
-  const [count, setCount] = useState(12);
+  const initialCount = defaultCount && defaultCount > 0 ? defaultCount : 1;
+  const initialCols = Math.max(1, Math.ceil(Math.sqrt(initialCount)));
+  const initialRows = Math.max(1, Math.ceil(initialCount / initialCols));
+  const [rows, setRows] = useState(initialRows);
+  const [cols, setCols] = useState(initialCols);
+  const [count, setCount] = useState(initialCount);
 
   function apply() {
     // 인원 수가 지정된 행×열보다 많으면 행을 자동으로 늘려서 전부 수용한다

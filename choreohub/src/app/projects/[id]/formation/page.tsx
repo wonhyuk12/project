@@ -26,7 +26,10 @@ export default function FormationPage({
   const setViewMode = useFormationStore((s) => s.setViewMode);
 
   useEffect(() => {
-    ensureProject(projectId, versions[0]?.durationSec);
+    // 여러 버전이 있으면 "가장 처음 만든 버전"이 아니라 "가장 긴 버전"(보통 전체 공연 원본) 길이를
+    // 타임라인 총 길이로 쓴다 — 이래야 짧은 버전을 먼저 올렸을 때 타임라인이 잘리지 않는다.
+    const longestDurationSec = versions.reduce((max, v) => Math.max(max, v.durationSec), 0);
+    ensureProject(projectId, longestDurationSec || undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
