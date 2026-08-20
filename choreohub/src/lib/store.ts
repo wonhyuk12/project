@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Project, ProjectStatus, Version, PoseFrame } from "./types";
+import type { Project, ProjectStatus, ProjectLicense, Version, PoseFrame } from "./types";
 import { createClient } from "./supabase/client";
 import { uploadVideo, getVideoUrl } from "./supabase/storage";
 
@@ -20,6 +20,8 @@ export interface NewVersionInput {
   videoExt: string;
   durationSec: number;
   poseData: PoseFrame[];
+  coversStart?: number | null;
+  coversEnd?: number | null;
 }
 
 interface ProjectRow {
@@ -33,9 +35,10 @@ interface ProjectRow {
   member_count: number;
   thumbnail_color: string;
   updated_at: string;
+  license: ProjectLicense;
 }
 
-interface VersionRow {
+export interface VersionRow {
   id: string;
   project_id: string;
   user_id: string;
@@ -44,6 +47,8 @@ interface VersionRow {
   duration_sec: number;
   pose_data: PoseFrame[];
   created_at: string;
+  covers_start_sec: number | null;
+  covers_end_sec: number | null;
 }
 
 function rowToProject(row: ProjectRow, versionCount: number): Project {
@@ -59,10 +64,11 @@ function rowToProject(row: ProjectRow, versionCount: number): Project {
     versionCount,
     updatedAt: row.updated_at.slice(0, 10),
     thumbnailColor: row.thumbnail_color,
+    license: row.license,
   };
 }
 
-function rowToVersion(row: VersionRow, videoUrl: string): Version {
+export function rowToVersion(row: VersionRow, videoUrl: string): Version {
   return {
     id: row.id,
     projectId: row.project_id,
@@ -72,6 +78,8 @@ function rowToVersion(row: VersionRow, videoUrl: string): Version {
     videoUrl,
     durationSec: Number(row.duration_sec),
     poseData: row.pose_data,
+    coversStart: row.covers_start_sec == null ? null : Number(row.covers_start_sec),
+    coversEnd: row.covers_end_sec == null ? null : Number(row.covers_end_sec),
   };
 }
 
@@ -83,6 +91,7 @@ interface ProjectState {
   hydrate: () => Promise<void>;
   addProject: (input: NewProjectInput) => Promise<Project>;
   addVersion: (input: NewVersionInput) => Promise<Version>;
+  updateProjectLicense: (projectId: string, license: ProjectLicense) => Promise<void>;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -177,6 +186,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         video_path: videoPath,
         duration_sec: input.durationSec,
         pose_data: input.poseData,
+        covers_start_sec: input.coversStart ?? null,
+        covers_end_sec: input.coversEnd ?? null,
       })
       .select()
       .single();
@@ -191,5 +202,14 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       ),
     }));
     return version;
+  },
+
+  updateProjectLicense: async (projectId, license) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("projects").update({ license }).eq("id", projectId);
+    if (error) throw error;
+    set((state) => ({
+      projects: state.projects.map((p) => (p.id === projectId ? { ...p, license } : p)),
+    }));
   },
 }));

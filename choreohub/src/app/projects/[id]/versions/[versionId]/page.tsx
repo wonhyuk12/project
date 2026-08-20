@@ -9,6 +9,7 @@ import { useCompareStore } from "@/lib/compare/store";
 import { SAMPLE_FPS } from "@/lib/poseExtraction";
 import { createClient } from "@/lib/supabase/client";
 import { fetchProfileNames, displayName, type ProfileNameInfo } from "@/lib/profiles";
+import { PoseDataViewer } from "@/components/project/PoseDataViewer";
 
 export default function VersionViewerPage({
   params,
@@ -71,6 +72,8 @@ export default function VersionViewerPage({
             {totalPersons}명 감지
           </p>
         </div>
+
+        <PoseDataViewer poseData={version.poseData} fileName={`${version.label}-pose.json`} />
 
         <Link
           href={`/projects/${projectId}/compare/new?userVersionId=${version.id}`}

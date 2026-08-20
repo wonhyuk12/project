@@ -6,56 +6,56 @@ import { TopBar } from "@/components/ui/TopBar";
 import { Button } from "@/components/ui/Button";
 import { PoseExtractor, type ExtractionResult } from "@/components/upload/PoseExtractor";
 import { useProjectStore } from "@/lib/store";
+import { useProposalStore } from "@/lib/proposals/store";
 import { extensionFromFile } from "@/lib/videoFile";
 import { useProjectPermission } from "@/lib/useProjectPermission";
 
-export default function AddVersionPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function NewProposalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: projectId } = use(params);
   const router = useRouter();
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
-  const allVersions = useProjectStore((s) => s.versions);
-  const versions = allVersions.filter((v) => v.projectId === projectId);
-  const addVersion = useProjectStore((s) => s.addVersion);
-  const { canEdit, checked } = useProjectPermission(projectId, project?.ownerId);
+  const addProposal = useProposalStore((s) => s.addProposal);
+  const { canPropose, checked } = useProjectPermission(projectId, project?.ownerId);
 
-  const [label, setLabel] = useState(`v${versions.length + 1}`);
+  const [title, setTitle] = useState("");
+  const [note, setNote] = useState("");
+  const [startSec, setStartSec] = useState("");
+  const [endSec, setEndSec] = useState("");
   const [extraction, setExtraction] = useState<ExtractionResult | null>(null);
-  const [coversStart, setCoversStart] = useState("");
-  const [coversEnd, setCoversEnd] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!extraction || submitting) return;
-
-    const start = coversStart.trim() === "" ? null : Number(coversStart);
-    const end = coversEnd.trim() === "" ? null : Number(coversEnd);
-    if ((start != null && Number.isNaN(start)) || (end != null && Number.isNaN(end))) {
-      setErrorMessage("담당 구간은 초 단위 숫자로 입력해주세요.");
+    if (!title.trim()) {
+      setErrorMessage("제목을 입력해주세요.");
+      return;
+    }
+    const start = Number(startSec);
+    const end = Number(endSec);
+    if (startSec.trim() === "" || endSec.trim() === "" || Number.isNaN(start) || Number.isNaN(end) || end <= start) {
+      setErrorMessage("담당 구간을 초 단위로 올바르게 입력해주세요 (끝이 시작보다 커야 해요).");
       return;
     }
 
     setSubmitting(true);
     setErrorMessage(null);
     try {
-      const version = await addVersion({
+      await addProposal({
         projectId,
-        label: label.trim() || `v${versions.length + 1}`,
+        title: title.trim(),
+        note: note.trim(),
+        startSec: start,
+        endSec: end,
         videoBlob: extraction.file,
         videoExt: extensionFromFile(extraction.file),
         durationSec: extraction.durationSec,
         poseData: extraction.poseData,
-        coversStart: start,
-        coversEnd: end,
       });
-      router.push(`/projects/${projectId}/versions/${version.id}`);
+      router.push(`/projects/${projectId}/proposals`);
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "버전 저장에 실패했어요.");
+      setErrorMessage(err instanceof Error ? err.message : "제안 저장에 실패했어요.");
       setSubmitting(false);
     }
   }
@@ -63,21 +63,19 @@ export default function AddVersionPage({
   if (!project) {
     return (
       <div className="mx-auto flex min-h-svh w-full max-w-md flex-col border-border sm:border-x">
-        <TopBar title="새 버전" backHref="/dashboard" />
-        <p className="px-4 pt-10 text-center text-sm text-muted">
-          프로젝트를 찾을 수 없어요
-        </p>
+        <TopBar title="제안하기" backHref="/dashboard" />
+        <p className="px-4 pt-10 text-center text-sm text-muted">프로젝트를 찾을 수 없어요</p>
       </div>
     );
   }
 
-  if (checked && !canEdit) {
+  if (checked && !canPropose) {
     return (
       <div className="mx-auto flex min-h-svh w-full max-w-md flex-col border-border sm:border-x">
-        <TopBar title={`${project.title} · 새 버전`} backHref={`/projects/${projectId}`} />
+        <TopBar title={`${project.title} · 제안하기`} backHref={`/projects/${projectId}/proposals`} />
         <p className="px-4 pt-10 text-center text-sm text-muted">
-          이 프로젝트에서 새 버전을 추가할 권한이 없어요 — 소유자에게 &quot;직접 수정&quot;
-          권한을 요청해주세요.
+          이 프로젝트에 제안을 올릴 권한이 없어요 — 소유자에게 &quot;수정 제안&quot; 이상 권한을
+          요청해주세요.
         </p>
       </div>
     );
@@ -85,34 +83,33 @@ export default function AddVersionPage({
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col border-border sm:border-x">
-      <TopBar title={`${project.title} · 새 버전`} backHref={`/projects/${projectId}`} />
+      <TopBar title={`${project.title} · 제안하기`} backHref={`/projects/${projectId}/proposals`} />
 
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-5 px-4 pb-8">
         <PoseExtractor onExtracted={setExtraction} />
 
         <div>
-          <label htmlFor="label" className="mb-1.5 block text-xs font-medium text-muted">
-            버전 이름
+          <label htmlFor="title" className="mb-1.5 block text-xs font-medium text-muted">
+            제목 (무엇을 고쳤는지 한 줄로)
           </label>
           <input
-            id="label"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="예: 후렴 팔 동작 변형"
             className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-muted">
-            담당 구간(선택) — 이 버전이 실제로 고친 부분만 초 단위로. 비워두면 전체로 기록돼요.
-          </label>
+          <label className="mb-1.5 block text-xs font-medium text-muted">담당 구간(초 단위)</label>
           <div className="flex items-center gap-2">
             <input
               type="number"
               min={0}
               step={0.1}
-              value={coversStart}
-              onChange={(e) => setCoversStart(e.target.value)}
+              value={startSec}
+              onChange={(e) => setStartSec(e.target.value)}
               placeholder="시작(초)"
               className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
             />
@@ -121,18 +118,32 @@ export default function AddVersionPage({
               type="number"
               min={0}
               step={0.1}
-              value={coversEnd}
-              onChange={(e) => setCoversEnd(e.target.value)}
+              value={endSec}
+              onChange={(e) => setEndSec(e.target.value)}
               placeholder="끝(초)"
               className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
             />
           </div>
         </div>
 
+        <div>
+          <label htmlFor="note" className="mb-1.5 block text-xs font-medium text-muted">
+            메모(선택)
+          </label>
+          <textarea
+            id="note"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={3}
+            placeholder="왜 이렇게 바꿨는지 적어두면 소유자가 판단하기 쉬워요"
+            className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
+          />
+        </div>
+
         <div className="mt-auto flex flex-col gap-2 pt-4">
           {!extraction && (
             <p className="text-center text-xs text-muted-2">
-              영상을 선택하고 포즈 추출을 완료해야 버전을 추가할 수 있어요
+              영상을 선택하고 포즈 추출을 완료해야 제안을 보낼 수 있어요
             </p>
           )}
           {errorMessage && (
@@ -141,7 +152,7 @@ export default function AddVersionPage({
             </p>
           )}
           <Button type="submit" className="flex-1" disabled={!extraction || submitting}>
-            {submitting ? "저장 중…" : "버전 추가"}
+            {submitting ? "보내는 중…" : "제안 보내기"}
           </Button>
         </div>
       </form>

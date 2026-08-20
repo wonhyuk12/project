@@ -1,5 +1,7 @@
 export type ProjectStatus = "in_progress" | "completed";
 
+export type ProjectLicense = "연습 전용" | "비상업 커버 허용" | "리믹스 허용" | "사전승인 필요";
+
 export interface Project {
   id: string;
   ownerId: string;
@@ -12,6 +14,7 @@ export interface Project {
   versionCount: number;
   updatedAt: string; // ISO date
   thumbnailColor: string; // placeholder gradient seed until real thumbnails exist
+  license: ProjectLicense;
 }
 
 export interface PoseLandmarkPoint {
@@ -40,6 +43,9 @@ export interface Version {
   videoUrl: string; // object URL — session-only until Supabase Storage (Phase 6)
   durationSec: number;
   poseData: PoseFrame[];
+  /** 이 버전이 실제로 담당한 구간(초) — null이면 전체(보통 원작 v1). 구간별 크레딧 계산에 쓴다. */
+  coversStart: number | null;
+  coversEnd: number | null;
 }
 
 export type CollabPermission = "보기만" | "수정 제안" | "직접 수정";
@@ -52,4 +58,23 @@ export interface ProjectMember {
   role: string; // 담당 파트 자유 서술(예: "포메이션 구성")
   counts: string; // 담당 구간(예: "count 09-16")
   addedAt: string;
+}
+
+export type ProposalStatus = "proposed" | "merged" | "declined";
+
+export interface Proposal {
+  id: string;
+  projectId: string;
+  authorId: string;
+  title: string;
+  note: string;
+  startSec: number;
+  endSec: number;
+  videoUrl: string;
+  durationSec: number;
+  poseData: PoseFrame[];
+  status: ProposalStatus;
+  decidedBy: string | null;
+  decidedAt: string | null;
+  createdAt: string;
 }

@@ -6,9 +6,14 @@ import { TopBar } from "@/components/ui/TopBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useProjectStore } from "@/lib/store";
 import { useCompareStore } from "@/lib/compare/store";
+import { useProposalStore } from "@/lib/proposals/store";
 import { createClient } from "@/lib/supabase/client";
 import { fetchProfileNames, displayName, type ProfileNameInfo } from "@/lib/profiles";
 import { useProjectPermission } from "@/lib/useProjectPermission";
+import { CreditTimeline } from "@/components/project/CreditTimeline";
+import type { ProjectLicense } from "@/lib/types";
+
+const LICENSES: ProjectLicense[] = ["연습 전용", "비상업 커버 허용", "리믹스 허용", "사전승인 필요"];
 
 export default function ProjectDetailPage({
   params,
@@ -21,17 +26,29 @@ export default function ProjectDetailPage({
   const versions = allVersions.filter((v) => v.projectId === id);
   const allRuns = useCompareStore((s) => s.runs);
   const compareRuns = allRuns.filter((r) => r.projectId === id);
+  const allProposals = useProposalStore((s) => s.proposals);
+  const openProposalCount = allProposals.filter(
+    (p) => p.projectId === id && p.status === "proposed",
+  ).length;
+  const updateProjectLicense = useProjectStore((s) => s.updateProjectLicense);
 
   const { canEdit } = useProjectPermission(id, project?.ownerId);
   const [names, setNames] = useState<Map<string, ProfileNameInfo>>(new Map());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [savingLicense, setSavingLicense] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       const supabase = createClient();
       const uploaderIds = versions.map((v) => v.createdBy);
-      const map = await fetchProfileNames(supabase, uploaderIds);
-      if (!cancelled) setNames(map);
+      const [map, userResult] = await Promise.all([
+        fetchProfileNames(supabase, uploaderIds),
+        supabase.auth.getUser(),
+      ]);
+      if (cancelled) return;
+      setNames(map);
+      setCurrentUserId(userResult.data.user?.id ?? null);
     }
     load();
     return () => {
@@ -39,6 +56,20 @@ export default function ProjectDetailPage({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, versions.length]);
+
+  const isOwner = !!currentUserId && !!project && currentUserId === project.ownerId;
+
+  async function handleLicenseChange(license: ProjectLicense) {
+    if (!project || savingLicense) return;
+    setSavingLicense(true);
+    try {
+      await updateProjectLicense(project.id, license);
+    } catch {
+      // 실패해도 조용히 무시 — 화면은 이전 값을 유지한다.
+    } finally {
+      setSavingLicense(false);
+    }
+  }
 
   if (!project) {
     return (
@@ -90,6 +121,44 @@ export default function ProjectDetailPage({
           <span>버전 {versions.length}개</span>
         </div>
 
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <p className="mb-1.5 text-xs font-medium text-muted">라이선스</p>
+          {isOwner ? (
+            <div className="flex flex-wrap gap-1.5">
+              {LICENSES.map((l) => (
+                <button
+                  key={l}
+                  onClick={() => handleLicenseChange(l)}
+                  disabled={savingLicense}
+                  className={`rounded-full px-2.5 py-1 text-xs transition-colors disabled:opacity-50 ${
+                    project.license === l
+                      ? "bg-accent text-white"
+                      : "border border-border text-muted hover:bg-surface-hover"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <span className="text-xs text-foreground">{project.license}</span>
+          )}
+        </div>
+
+        <CreditTimeline versions={versions} names={names} />
+
+        <Link
+          href={`/projects/${id}/proposals`}
+          className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-sm text-muted transition-colors hover:bg-surface-hover"
+        >
+          📝 수정 제안
+          {openProposalCount > 0 && (
+            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs text-accent-light">
+              {openProposalCount}건 대기
+            </span>
+          )}
+        </Link>
+
         <div className="mt-2 flex items-center justify-between">
           <h2 className="text-sm font-medium text-foreground">버전 타임라인</h2>
           {canEdit && (
@@ -115,7 +184,14 @@ export default function ProjectDetailPage({
                 className="flex items-center justify-between rounded-xl border border-border bg-surface px-3 py-2.5 transition-colors hover:bg-surface-hover"
               >
                 <div>
-                  <p className="text-sm text-foreground">{v.label}</p>
+                  <p className="text-sm text-foreground">
+                    {v.label}
+                    {v.coversStart != null && v.coversEnd != null && (
+                      <span className="ml-1.5 text-xs text-accent-light">
+                        {Math.floor(v.coversStart)}s~{Math.ceil(v.coversEnd)}s 구간
+                      </span>
+                    )}
+                  </p>
                   <p className="text-xs text-muted">
                     {displayName(names.get(v.createdBy))} · {v.createdAt} · {v.poseData.length}
                     프레임

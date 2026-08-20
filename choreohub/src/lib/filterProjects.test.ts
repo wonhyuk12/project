@@ -12,6 +12,7 @@ const base: Omit<Project, "id" | "status"> = {
   versionCount: 1,
   updatedAt: "2026-01-01",
   thumbnailColor: "from-violet-600 to-fuchsia-700",
+  license: "연습 전용",
 };
 
 const projects: Project[] = [
