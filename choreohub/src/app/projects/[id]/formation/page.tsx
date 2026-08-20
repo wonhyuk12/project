@@ -79,6 +79,31 @@ export default function FormationPage({
         </span>
       </div>
 
+      {/* 2D 편집하면서 3D로 계속 왔다 갔다 확인하기 편하게, 전환 버튼을 스크롤 없이 바로
+          보이는 위쪽에 둔다(예전엔 맨 아래에 있어서 매번 스크롤해야 했음). */}
+      <div className="flex gap-2 px-4 pb-3">
+        <button
+          onClick={() => setViewMode("2d")}
+          className={`flex-1 rounded-xl py-2 text-sm font-medium transition-colors ${
+            viewMode === "2d"
+              ? "bg-accent text-white"
+              : "border border-border bg-surface text-muted hover:bg-surface-hover"
+          }`}
+        >
+          🖊 2D 편집
+        </button>
+        <button
+          onClick={() => setViewMode("3d")}
+          className={`flex-1 rounded-xl py-2 text-sm font-medium transition-colors ${
+            viewMode === "3d"
+              ? "bg-accent text-white"
+              : "border border-border bg-surface text-muted hover:bg-surface-hover"
+          }`}
+        >
+          🧍 3D 보기
+        </button>
+      </div>
+
       <div className="px-4 pb-3">
         <FormationTimeline projectId={projectId} />
       </div>
@@ -89,15 +114,6 @@ export default function FormationPage({
         ) : (
           <FormationEditor projectId={projectId} />
         )}
-      </div>
-
-      <div className="flex gap-3 px-4 pb-6">
-        <button
-          onClick={() => setViewMode(viewMode === "3d" ? "2d" : "3d")}
-          className="flex-1 rounded-xl border border-border bg-surface py-3 text-sm text-muted transition-colors hover:bg-surface-hover active:scale-[0.98]"
-        >
-          {viewMode === "3d" ? "포메이션 편집 (2D)" : "3D로 보기"}
-        </button>
       </div>
     </div>
   );
