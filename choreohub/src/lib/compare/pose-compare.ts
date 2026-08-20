@@ -298,6 +298,11 @@ function applyMatchThreshold(score: number): number {
   return score >= MATCH_THRESHOLD ? 100 : score;
 }
 
+/** MATCH_THRESHOLD와 같은 근거(측정 잡음 허용치 ~5.4도)를 "차이 큰 관절" 표시에도 적용한다.
+ *  이만큼 이하 차이는 다른 관절 11개가 얼마나 잘 맞든 상관없이 그냥 노이즈이므로, 굳이
+ *  "차이 큰 관절"로 짚어서 보여주지 않는다. */
+const JOINT_NOISE_THRESHOLD_DEG = 5;
+
 /**
  * 카메라와 너무 가까이서 찍어 몸의 일부가 프레임 밖으로 나가거나(다리 잘림 등), 각도가
  * 안 좋아서 랜드마크 visibility가 낮으면 그 관절은 비교에서 자동 제외된다(가중치
@@ -355,6 +360,8 @@ export function compareLiveFrame(
     }
   }
 
+  if (worstJoint && worstJoint.avgDiffDeg < JOINT_NOISE_THRESHOLD_DEG) worstJoint = null;
+
   return { score, worstJoint };
 }
 
@@ -399,6 +406,7 @@ function computeWorstJoints(
   }
 
   return withValues
+    .filter((j) => j.avgDiffDeg >= JOINT_NOISE_THRESHOLD_DEG)
     .sort((a, b) => b.avgDiffDeg - a.avgDiffDeg)
     .slice(0, 3)
     .map((j) => ({
