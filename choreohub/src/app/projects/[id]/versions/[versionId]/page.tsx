@@ -65,6 +65,13 @@ export default function VersionViewerPage({
           🎥 이 영상 보면서 실시간 연습
         </Link>
 
+        <Link
+          href={`/projects/${projectId}/formation`}
+          className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-sm text-muted transition-colors hover:bg-surface-hover"
+        >
+          🧍 3D 포메이션 뷰
+        </Link>
+
         {runsForVersion.length > 0 && (
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium text-foreground">이 버전의 비교 기록</p>
