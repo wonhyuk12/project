@@ -23,10 +23,20 @@ if (!migrationPath) {
 }
 const sql = fs.readFileSync(migrationPath, "utf8");
 
-// 프로젝트가 direct connection(db.<ref>.supabase.co)을 안 내주는 최신 인프라라
-// Session Pooler를 쓴다 — 실제로 접속되는 리전을 확인해서 ap-northeast-1로 고정함.
+// 프로젝트가 direct connection(db.<ref>.supabase.co)을 안 내주는 최신 인프라라(IPv6 전용,
+// 이 환경은 IPv6 라우팅이 안 됨) Session Pooler를 쓴다. 풀러 리전은 프로젝트마다 다르니
+// (예: bgqnwhazfqvdwkyetxsz는 ap-northeast-1, uepzzndhofribmbqdfbq는 ap-southeast-2였음)
+// .env.local의 SUPABASE_POOLER_HOST로 오버라이드 가능하게 하고, 기본값만 하나 잡아둔다.
+const poolerHost = (() => {
+  try {
+    return envVar("SUPABASE_POOLER_HOST");
+  } catch {
+    return "aws-0-ap-northeast-1.pooler.supabase.com";
+  }
+})();
+
 const client = new Client({
-  host: "aws-0-ap-northeast-1.pooler.supabase.com",
+  host: poolerHost,
   port: 6543,
   user: `postgres.${projectRef}`,
   password,

@@ -1,7 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createSsrClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseJsClient, type SupabaseClient } from "@supabase/supabase-js";
 import { CORS_HEADERS } from "@/lib/cors";
+
+/** chisung42 프론트(choreohub.vercel.app)는 다른 오리진이라 우리 세션 쿠키가 안 실려온다
+ *  (supabase-js는 브라우저에서 기본적으로 localStorage에 세션을 두지, 쿠키를 안 씀 — 애초에
+ *  같은 오리진이었어도 쿠키 공유가 안 됐을 것). 그래서 그쪽은 Authorization: Bearer 헤더로
+ *  자기 세션의 access_token을 실어 보내고, 여기서는 있으면 그걸로, 없으면(우리 자체 UI가
+ *  호출한 경우) 기존 쿠키 기반 세션으로 인증한다. */
+async function getAuthedSupabase(req: NextRequest): Promise<{ supabase: SupabaseClient; user: { id: string } | null }> {
+  const bearer = req.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
+  if (bearer) {
+    const supabase = createSupabaseJsClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { global: { headers: { Authorization: `Bearer ${bearer}` } } },
+    );
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return { supabase, user };
+  }
+  const supabase = await createSsrClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return { supabase, user };
+}
 
 // 영상 업로드(용량 큼) + Gemini Files API 폴링이 있어서 Node 런타임이 필요하다.
 export const runtime = "nodejs";
@@ -159,10 +185,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthedSupabase(req);
   if (!user) {
     return NextResponse.json({ error: "로그인이 필요해요." }, { status: 401 });
   }
