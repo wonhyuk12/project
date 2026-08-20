@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -14,6 +14,32 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/dashboard";
+
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  // 익명 로그인은 "이름으로 시작하기"를 다시 누를 때마다 완전히 새 계정을 만든다 — 이미
+  // 로그인된 사람이 실수로(뒤로가기, 북마크 등) /login에 다시 들어와서 또 누르면 조용히
+  // 다른 계정으로 갈아타서 자기 프로젝트 소유권을 잃어버린다. 그래서 세션이 이미 있으면
+  // 폼을 보여주지 않고 바로 넘긴다.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (user) {
+        router.replace(next);
+        return;
+      }
+      setCheckingSession(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [mode, setMode] = useState<Mode>("login");
   const [step, setStep] = useState<Step>("quick");
@@ -149,6 +175,8 @@ function LoginForm() {
     setResending(false);
     setResendMessage(error ? "재전송에 실패했어요 — 잠시 후 다시 시도해주세요." : "인증번호를 다시 보냈어요.");
   }
+
+  if (checkingSession) return null;
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col justify-center border-border px-6 py-10 sm:border-x">
