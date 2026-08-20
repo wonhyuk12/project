@@ -8,7 +8,7 @@ import { Logo } from "@/components/ui/Logo";
 import { formatPhone } from "@/lib/phone";
 
 type Mode = "login" | "signup";
-type Step = "form" | "verify-otp";
+type Step = "quick" | "form" | "verify-otp";
 
 function LoginForm() {
   const router = useRouter();
@@ -16,16 +16,42 @@ function LoginForm() {
   const next = searchParams.get("next") ?? "/dashboard";
 
   const [mode, setMode] = useState<Mode>("login");
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep] = useState<Step>("quick");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
+  const [quickName, setQuickName] = useState("");
   const [otp, setOtp] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
+
+  // 해커톤용 — 이메일/비밀번호/인증번호 없이 이름만으로 바로 들어온다. Supabase 익명 로그인으로
+  // 실제 auth.uid()가 있는 세션을 만들고, 이름은 raw_user_meta_data로 넘겨서 기존
+  // handle_new_user() 트리거가 profiles.name에 그대로 채워 넣게 한다(스키마 변경 불필요).
+  async function handleQuickStart(e: React.FormEvent) {
+    e.preventDefault();
+    if (!quickName.trim()) return;
+    setSubmitting(true);
+    setErrorMessage(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInAnonymously({
+      options: { data: { name: quickName.trim() } },
+    });
+    setSubmitting(false);
+    if (error) {
+      setErrorMessage(
+        error.message.includes("Anonymous sign-ins are disabled")
+          ? "관리자가 익명 로그인을 아직 켜지 않았어요 — 이메일로 로그인해주세요."
+          : error.message,
+      );
+      return;
+    }
+    router.push(next);
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -131,7 +157,49 @@ function LoginForm() {
         <span className="text-lg font-semibold tracking-tight">ChoreoHub</span>
       </div>
 
-      {step === "verify-otp" ? (
+      {step === "quick" ? (
+        <>
+          <h1 className="mb-2 text-xl font-semibold tracking-tight">이름만 입력하고 시작해요</h1>
+          <p className="mb-6 text-sm text-muted">
+            이메일이나 비밀번호 없이 이름만으로 바로 시작할 수 있어요.
+          </p>
+
+          <form onSubmit={handleQuickStart} className="flex flex-col gap-2">
+            <input
+              type="text"
+              required
+              autoFocus
+              value={quickName}
+              onChange={(e) => setQuickName(e.target.value)}
+              placeholder="이름 (예: 김안무)"
+              className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
+            />
+            <button
+              type="submit"
+              disabled={submitting || !quickName.trim()}
+              className="mt-1 rounded-xl bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-light disabled:opacity-50"
+            >
+              {submitting ? "시작하는 중…" : "시작하기"}
+            </button>
+          </form>
+
+          {errorMessage && (
+            <p className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-center text-xs text-red-300">
+              {errorMessage}
+            </p>
+          )}
+
+          <button
+            onClick={() => {
+              setStep("form");
+              setErrorMessage(null);
+            }}
+            className="mt-6 text-center text-xs text-muted underline"
+          >
+            이메일로 로그인/회원가입
+          </button>
+        </>
+      ) : step === "verify-otp" ? (
         <>
           <h1 className="mb-2 text-xl font-semibold tracking-tight">인증번호를 입력해주세요</h1>
           <p className="mb-6 text-sm text-muted">
@@ -280,6 +348,16 @@ function LoginForm() {
               가입 후 메일로 받는 인증번호를 입력해야 로그인할 수 있어요.
             </p>
           )}
+
+          <button
+            onClick={() => {
+              setStep("quick");
+              setErrorMessage(null);
+            }}
+            className="mt-4 text-center text-xs text-muted underline"
+          >
+            ‹ 이름으로 빠르게 시작하기
+          </button>
         </>
       )}
     </div>
