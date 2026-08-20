@@ -1,12 +1,14 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { TopBar } from "@/components/ui/TopBar";
 import { SkeletonOverlayPlayer } from "@/components/viewer/SkeletonOverlayPlayer";
 import { useProjectStore } from "@/lib/store";
 import { useCompareStore } from "@/lib/compare/store";
 import { SAMPLE_FPS } from "@/lib/poseExtraction";
+import { createClient } from "@/lib/supabase/client";
+import { fetchProfileNames, displayName, type ProfileNameInfo } from "@/lib/profiles";
 
 export default function VersionViewerPage({
   params,
@@ -17,6 +19,22 @@ export default function VersionViewerPage({
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
   const version = useProjectStore((s) => s.versions.find((v) => v.id === versionId));
   const allRuns = useCompareStore((s) => s.runs);
+
+  const [uploader, setUploader] = useState<ProfileNameInfo | undefined>();
+
+  const createdBy = version?.createdBy;
+  useEffect(() => {
+    if (!createdBy) return;
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const map = await fetchProfileNames(supabase, [createdBy]);
+      if (!cancelled) setUploader(map.get(createdBy));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [createdBy]);
 
   if (!project || !version) {
     return (
@@ -44,7 +62,10 @@ export default function VersionViewerPage({
         <SkeletonOverlayPlayer version={version} />
 
         <div className="rounded-xl border border-border bg-surface p-3 text-xs text-muted">
-          <p>생성일 {version.createdAt}</p>
+          <p>
+            만든 사람 <span className="text-foreground">{displayName(uploader)}</span> · 생성일{" "}
+            {version.createdAt}
+          </p>
           <p>
             포즈 프레임 {version.poseData.length}개 (초당 {SAMPLE_FPS}프레임) · 최대{" "}
             {totalPersons}명 감지

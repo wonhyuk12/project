@@ -38,6 +38,7 @@ interface ProjectRow {
 interface VersionRow {
   id: string;
   project_id: string;
+  user_id: string;
   label: string;
   video_path: string;
   duration_sec: number;
@@ -67,6 +68,7 @@ function rowToVersion(row: VersionRow, videoUrl: string): Version {
     projectId: row.project_id,
     label: row.label,
     createdAt: row.created_at.slice(0, 10),
+    createdBy: row.user_id,
     videoUrl,
     durationSec: Number(row.duration_sec),
     poseData: row.pose_data,

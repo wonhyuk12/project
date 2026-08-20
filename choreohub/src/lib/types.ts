@@ -36,7 +36,20 @@ export interface Version {
   projectId: string;
   label: string;
   createdAt: string; // ISO date
+  createdBy: string; // 업로드한 사람의 user_id — "누가 만들었는지" 표시용
   videoUrl: string; // object URL — session-only until Supabase Storage (Phase 6)
   durationSec: number;
   poseData: PoseFrame[];
+}
+
+export type CollabPermission = "보기만" | "수정 제안" | "직접 수정";
+
+export interface ProjectMember {
+  userId: string;
+  name: string | null;
+  email: string | null;
+  permission: CollabPermission;
+  role: string; // 담당 파트 자유 서술(예: "포메이션 구성")
+  counts: string; // 담당 구간(예: "count 09-16")
+  addedAt: string;
 }

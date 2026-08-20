@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { PoseExtractor, type ExtractionResult } from "@/components/upload/PoseExtractor";
 import { useProjectStore } from "@/lib/store";
 import { extensionFromFile } from "@/lib/videoFile";
+import { useProjectPermission } from "@/lib/useProjectPermission";
 
 export default function AddVersionPage({
   params,
@@ -19,6 +20,7 @@ export default function AddVersionPage({
   const allVersions = useProjectStore((s) => s.versions);
   const versions = allVersions.filter((v) => v.projectId === projectId);
   const addVersion = useProjectStore((s) => s.addVersion);
+  const { canEdit, checked } = useProjectPermission(projectId, project?.ownerId);
 
   const [label, setLabel] = useState(`v${versions.length + 1}`);
   const [extraction, setExtraction] = useState<ExtractionResult | null>(null);
@@ -53,6 +55,18 @@ export default function AddVersionPage({
         <TopBar title="새 버전" backHref="/dashboard" />
         <p className="px-4 pt-10 text-center text-sm text-muted">
           프로젝트를 찾을 수 없어요
+        </p>
+      </div>
+    );
+  }
+
+  if (checked && !canEdit) {
+    return (
+      <div className="mx-auto flex min-h-svh w-full max-w-md flex-col border-border sm:border-x">
+        <TopBar title={`${project.title} · 새 버전`} backHref={`/projects/${projectId}`} />
+        <p className="px-4 pt-10 text-center text-sm text-muted">
+          이 프로젝트에서 새 버전을 추가할 권한이 없어요 — 소유자에게 &quot;직접 수정&quot;
+          권한을 요청해주세요.
         </p>
       </div>
     );

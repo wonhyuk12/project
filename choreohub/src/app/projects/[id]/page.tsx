@@ -1,11 +1,14 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { TopBar } from "@/components/ui/TopBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useProjectStore } from "@/lib/store";
 import { useCompareStore } from "@/lib/compare/store";
+import { createClient } from "@/lib/supabase/client";
+import { fetchProfileNames, displayName, type ProfileNameInfo } from "@/lib/profiles";
+import { useProjectPermission } from "@/lib/useProjectPermission";
 
 export default function ProjectDetailPage({
   params,
@@ -18,6 +21,24 @@ export default function ProjectDetailPage({
   const versions = allVersions.filter((v) => v.projectId === id);
   const allRuns = useCompareStore((s) => s.runs);
   const compareRuns = allRuns.filter((r) => r.projectId === id);
+
+  const { canEdit } = useProjectPermission(id, project?.ownerId);
+  const [names, setNames] = useState<Map<string, ProfileNameInfo>>(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const supabase = createClient();
+      const uploaderIds = versions.map((v) => v.createdBy);
+      const map = await fetchProfileNames(supabase, uploaderIds);
+      if (!cancelled) setNames(map);
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, versions.length]);
 
   if (!project) {
     return (
@@ -71,12 +92,14 @@ export default function ProjectDetailPage({
 
         <div className="mt-2 flex items-center justify-between">
           <h2 className="text-sm font-medium text-foreground">버전 타임라인</h2>
-          <Link
-            href={`/projects/${id}/upload`}
-            className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition-colors hover:bg-surface-hover"
-          >
-            + 새 버전 추가
-          </Link>
+          {canEdit && (
+            <Link
+              href={`/projects/${id}/upload`}
+              className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition-colors hover:bg-surface-hover"
+            >
+              + 새 버전 추가
+            </Link>
+          )}
         </div>
 
         {versions.length === 0 ? (
@@ -94,7 +117,8 @@ export default function ProjectDetailPage({
                 <div>
                   <p className="text-sm text-foreground">{v.label}</p>
                   <p className="text-xs text-muted">
-                    {v.createdAt} · {v.poseData.length}프레임
+                    {displayName(names.get(v.createdBy))} · {v.createdAt} · {v.poseData.length}
+                    프레임
                   </p>
                 </div>
                 <span className="text-muted">›</span>
