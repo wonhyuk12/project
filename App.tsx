@@ -13,6 +13,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import Svg, { Circle, Line } from 'react-native-svg';
+import {
+  signInQuick, signOutQuick, restoreSession, fetchProjectsForUser, createProjectWithVideo,
+  joinProjectByCode, saveCollaboratorRow, removeCollaboratorRow, probeVideoDuration,
+  saveLivePracticeRun, fetchLatestVersionFrames, fetchVersionGraph, submitProposalRow,
+  approveProposalRow, declineProposalRow, updateProjectMeta, fetchFramesById,
+  fetchCommunity, fetchProfile, followUser, unfollowUser, supabase,
+} from './lib/supabaseData';
+import { extractPoseFromBlob } from './lib/poseExtract';
 
 type Page = 'home' | 'library' | 'new' | 'capture' | 'version' | 'overlay' | 'data' | 'analysis' | 'motion' | 'collab' | 'perform' | 'profile' | 'community' | 'license' | 'passport' | 'live' | 'youtube' | 'formation' | 'practiceLog';
 type PracticeRun = {
@@ -75,6 +83,9 @@ type JobStage = 'uploading' | 'analyzing' | 'rendering' | 'encoding' | 'done' | 
 type JobProgress = { stage: JobStage; done: number; total: number; error?: string };
 
 const MEDIAPIPE_API_URL = process.env.EXPO_PUBLIC_MEDIAPIPE_API_URL;
+// 우리 실제 Next.js 백엔드(choreohub-api.vercel.app) — /api/compare/advice 같은, 비밀키가
+// 필요해서 브라우저에서 직접 못 하는 것만 여기로 크로스 오리진 호출한다.
+const BACKEND_API_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
 
 // ChoreoHub is a living archive, not a developer dashboard.  The palette keeps
 // the page tactile and editorial while the blue carries the provenance signal.
@@ -383,6 +394,16 @@ function Bottom({ page, go, plus }: { page: Page; go: (p: Page) => void; plus: (
 export default function App() {
   const [page, setPage] = useState<Page>('home');
   const [me, setMe] = useState<Me | null>(loadMe);
+
+  // 새로고침해도 Supabase 세션이 남아있으면(익명 로그인도 브라우저에 세션이 유지됨) 그걸
+  // 우선한다 — localStorage의 이름 캐시(loadMe)는 첫 렌더 깜빡임 방지용 낙관적 값일 뿐이다.
+  useEffect(() => {
+    restoreSession().then((restored) => {
+      if (restored) { saveMe(restored); setMe(restored); }
+      else if (me) { saveMe(null); setMe(null); }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [signInName, setSignInName] = useState('');
   const [remoteProjects, setRemoteProjects] = useState<Project[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -422,12 +443,11 @@ export default function App() {
     setCompareResult('loading');
     setAdviceResult(null);
     try {
-      const [headData, targetData] = await Promise.all([
-        api(`/v1/projects/${selected.id}/frames`),
-        api(`/v1/projects/${selected.id}/versions/${target.id}/frames`),
+      const [headData, targetFrames] = await Promise.all([
+        fetchLatestVersionFrames(selected.id),
+        fetchFramesById(target.id),
       ]);
-      const headFrames: MotionFrame[] = headData?.frames ?? [];
-      const targetFrames: MotionFrame[] = targetData?.frames ?? [];
+      const headFrames: MotionFrame[] = headData.frames;
       if (!headFrames.length || !targetFrames.length) { setCompareResult('error'); return; }
       const result = compareSequences(
         motionFramesToPoseFrames(headFrames),
@@ -437,22 +457,39 @@ export default function App() {
     } catch { setCompareResult('error'); }
   };
 
+  // AI 조언은 우리 실제 Next.js 백엔드(choreohub-api.vercel.app, /api/compare/advice)를
+  // 크로스 오리진으로 그대로 호출한다. 그쪽은 로그인 세션을 쿠키로 안 받고(다른 오리진이라
+  // 애초에 못 옴) Authorization: Bearer 헤더로 받게 고쳐뒀다 — 여기서 지금 세션의
+  // access_token을 그대로 실어 보낸다.
   const requestAdvice = async () => {
     if (!selected || !compareTarget || !me) return;
     const r = compareResult;
     if (!r || r === 'loading' || r === 'error') return;
     setAdviceResult('loading');
     try {
-      const result: AdviceResult = await api(`/v1/projects/${selected.id}/advice`, {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('로그인이 필요해요.');
+
+      const form = new FormData();
+      form.append('mode', 'numeric');
+      form.append('userVideoUrl', selected.videoUrl ?? '');
+      form.append('refVideoUrl', compareTarget.videoUrl ?? '');
+      form.append('segments', JSON.stringify(r.segments));
+
+      const res = await fetch(`${BACKEND_API_URL}/api/compare/advice`, {
         method: 'POST',
-        body: {
-          user_id: me.user_id,
-          target_version_id: compareTarget.id,
-          compare: { overallScore: r.overallScore, mirrored: r.mirrored, segments: r.segments },
-        },
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
       });
-      setAdviceResult(result);
-    } catch { setAdviceResult('error'); }
+      let data: any;
+      try { data = await res.json(); } catch { throw new Error(`서버 오류가 발생했어요 (${res.status}).`); }
+      if (!res.ok) throw new Error(data.error ?? 'AI 조언 생성에 실패했어요.');
+      setAdviceResult(data as AdviceResult);
+    } catch (error: any) {
+      setAdviceResult('error');
+      notify('AI 조언을 못 받았어요', error?.message ?? '다시 시도해 주세요.');
+    }
   };
 
   // 웹캠 실시간 연습 — 레퍼런스 영상의 재생 시계에 맞춰 웹캠 프레임을 그리드로 샘플링하고
@@ -518,8 +555,8 @@ export default function App() {
       refVideoElRef.current = refEl;
 
       setLiveStatus('loading-model');
-      const headData = await api(`/v1/projects/${selected.id}/frames`);
-      liveReferencePoseRef.current = motionFramesToPoseFrames(headData?.frames ?? []);
+      const headData = await fetchLatestVersionFrames(selected.id);
+      liveReferencePoseRef.current = motionFramesToPoseFrames(headData.frames);
       await getPoseLandmarker();
       setLiveStatus('ready');
     } catch (err: any) {
@@ -612,23 +649,24 @@ export default function App() {
     const asset: MotionAsset = { uri: URL.createObjectURL(blob), fileName: 'live-practice.webm', mimeType: blob.type || 'video/webm', source: 'camera', webFile: file };
 
     try {
-      const motion = await new Promise<Record<string, any>>((resolve, reject) => {
-        uploadForAnalysis(
-          asset,
-          job => { setLiveJob(job); if (job.stage === 'error') reject(new Error(job.error || '분석에 실패했어요.')); },
-          () => {},
-          result => resolve(result),
-        );
+      setLiveJob({ stage: 'analyzing', done: 0, total: 0 });
+      const extraction = await extractPoseFromBlob(blob, (done, total) => {
+        setLiveJob({ stage: 'analyzing', done: Math.round(done * SAMPLE_FPS), total: Math.round(total * SAMPLE_FPS) });
       });
-      // 연습은 versions 와 완전히 분리된 기록이다 — 안무를 고친 게 아니라 개인 연습일 뿐이라
-      // 버전 이력·HEAD·크레딧에는 손대지 않는다(안무 수정은 여전히 제안하기/즉시반영 쪽 몫).
+      setLiveJob({ stage: 'done', done: extraction.frames.length, total: extraction.frames.length });
+
+      // 개인 연습 기록 — 안무 자체(versions의 head/크레딧)는 바뀌지 않고, 채점 결과만 남는다.
+      // (compare_runs에 새 versions 행을 하나 만들어 붙이긴 하지만 head_version_id는 안 건드림.)
       const avgScore = liveScoreWindowRef.current.length
         ? liveScoreWindowRef.current.reduce((a, b) => a + b, 0) / liveScoreWindowRef.current.length
         : liveScore;
-      await api(`/v1/projects/${selected.id}/practice`, { method: 'POST', body: {
-        user_id: me.user_id, reference_version_id: versions?.headId ?? null,
-        overall_score: Math.round(avgScore * 10) / 10, mirrored: liveMirroredRef.current, motion,
-      } });
+      await saveLivePracticeRun({
+        userId: me.user_id, projectId: selected.id,
+        referenceVersionId: versions?.headId ?? null,
+        videoBlob: blob, videoExt: 'webm', durationSec: extraction.durationSec,
+        poseData: motionFramesToPoseFrames(extraction.frames),
+        overallScore: Math.round(avgScore * 10) / 10, mirrored: liveMirroredRef.current,
+      });
       setLiveStatus('done');
       notify('연습 기록을 저장했어요', `일치율 ${Math.round(avgScore)}% · 안무 자체는 바뀌지 않아요`, 'ok');
     } catch (err: any) {
@@ -764,6 +802,7 @@ export default function App() {
   const [proposeAsset, setProposeAsset] = useState<MotionAsset | null>(null);
   const [proposeJob, setProposeJob] = useState<JobProgress | null>(null);
   const [proposeMotion, setProposeMotion] = useState<Record<string, any> | null>(null);
+  const [proposeMotionFrames, setProposeMotionFrames] = useState<MotionFrame[]>([]);
   const [proposePending, setProposePending] = useState(false);
   const [license, setLicense] = useState<License>('리믹스 허용');
   const [modal, setModal] = useState(false); const [name, setName] = useState(''); const [filter, setFilter] = useState('전체');
@@ -835,46 +874,51 @@ export default function App() {
   const processMotion = async (nextAsset: MotionAsset) => {
     setAsset(nextAsset); setMotionFrames([]); setPoseFrames(0); setPreviewUrls({});
     setVideoSize(null); setMotionRef(null); setPendingPublish(false);
-    await uploadForAnalysis(nextAsset, setJob,
-      started => {
-        // 분석을 기다리지 않고 영상부터 띄운다 — 그동안 제목과 라이선스를 입력할 수 있다
-        if (started.video_url) {
-          const hosted = new URL(started.video_url, API).toString();
-          setAsset(current => current ? { ...current, uri: hosted } : current);
-        }
-        if (started.width && started.height) setVideoSize({ width: started.width, height: started.height });
-        setMotionRef({ source_sha256: started.source_sha256, video_url: started.video_url,
-                       width: started.width, height: started.height, frame_count: started.frame_count,
-                       fps: started.fps, duration_ms: durationOf(started) });
-      },
-      result => {
-        setPreviewUrls({
-          overlay: result.preview_overlay_url ? new URL(result.preview_overlay_url, API).toString() : undefined,
-          skeleton: result.preview_3d_skeleton_url ? new URL(result.preview_3d_skeleton_url, API).toString() : undefined });
-        setMotionFrames(result.frames ?? []); setPoseFrames(result.frame_count ?? 0);
-        if (result.width && result.height) setVideoSize({ width: result.width, height: result.height });
-        setMotionRef(current => ({ ...(current ?? {}), frame_count: result.frame_count ?? 0 }));
+    setJob({ stage: 'analyzing', done: 0, total: 0 });
+    try {
+      const blob = (nextAsset.webFile ?? await fetch(nextAsset.uri).then((r) => r.blob())) as Blob;
+      const extraction = await extractPoseFromBlob(blob, (done, total) => {
+        setJob({ stage: 'analyzing', done: Math.round(done * SAMPLE_FPS), total: Math.round(total * SAMPLE_FPS) });
       });
+      setVideoSize({ width: extraction.width, height: extraction.height });
+      setMotionFrames(extraction.frames);
+      setPoseFrames(extraction.frames.length);
+      setMotionRef({
+        width: extraction.width, height: extraction.height, frame_count: extraction.frames.length,
+        fps: SAMPLE_FPS, duration_ms: Math.round(extraction.durationSec * 1000),
+      });
+      setJob({ stage: 'done', done: extraction.frames.length, total: extraction.frames.length });
+    } catch (error: any) {
+      setJob({ stage: 'error', done: 0, total: 0, error: error?.message ?? '포즈 추출에 실패했어요.' });
+    }
   };
 
   /* ── 제안에 영상 첨부 ── */
 
   const attachProposalVideo = async (nextAsset: MotionAsset) => {
-    setProposeAsset(nextAsset); setProposeMotion(null);
-    await uploadForAnalysis(nextAsset, setProposeJob,
-      started => {
-        const duration_ms = durationOf(started);
-        setProposeMotion({ source_sha256: started.source_sha256, video_url: started.video_url,
-                          width: started.width, height: started.height, frame_count: started.frame_count,
-                          fps: started.fps, duration_ms });
-        // 시작 시각이 이미 적혀 있으면 이 영상 길이만큼 끝을 바로 채운다 — 영상을 나중에
-        // 올린 경우에도 자동 계산이 똑같이 적용되도록.
-        setProposeDraft(draft => {
-          const autoTo = autoEndFromClip(draft.from, duration_ms);
-          return autoTo ? { ...draft, to: autoTo } : draft;
-        });
-      },
-      result => setProposeMotion(current => ({ ...(current ?? {}), frame_count: result.frame_count ?? 0 })));
+    setProposeAsset(nextAsset); setProposeMotion(null); setProposeMotionFrames([]);
+    setProposeJob({ stage: 'analyzing', done: 0, total: 0 });
+    try {
+      const blob = (nextAsset.webFile ?? await fetch(nextAsset.uri).then((r) => r.blob())) as Blob;
+      const extraction = await extractPoseFromBlob(blob, (done, total) => {
+        setProposeJob({ stage: 'analyzing', done: Math.round(done * SAMPLE_FPS), total: Math.round(total * SAMPLE_FPS) });
+      });
+      const duration_ms = Math.round(extraction.durationSec * 1000);
+      setProposeMotionFrames(extraction.frames);
+      setProposeMotion({
+        width: extraction.width, height: extraction.height, frame_count: extraction.frames.length,
+        fps: SAMPLE_FPS, duration_ms,
+      });
+      // 시작 시각이 이미 적혀 있으면 이 영상 길이만큼 끝을 바로 채운다 — 영상을 나중에
+      // 올린 경우에도 자동 계산이 똑같이 적용되도록.
+      setProposeDraft(draft => {
+        const autoTo = autoEndFromClip(draft.from, duration_ms);
+        return autoTo ? { ...draft, to: autoTo } : draft;
+      });
+      setProposeJob({ stage: 'done', done: extraction.frames.length, total: extraction.frames.length });
+    } catch (error: any) {
+      setProposeJob({ stage: 'error', done: 0, total: 0, error: error?.message ?? '포즈 추출에 실패했어요.' });
+    }
   };
 
   const chooseProposalVideo = async () => {
@@ -885,7 +929,7 @@ export default function App() {
       mimeType: file.mimeType ?? 'video/mp4', duration: file.duration, source: 'library', webFile: file.file });
   };
 
-  const clearProposalVideo = () => { setProposeAsset(null); setProposeJob(null); setProposeMotion(null); };
+  const clearProposalVideo = () => { setProposeAsset(null); setProposeJob(null); setProposeMotion(null); setProposeMotionFrames([]); };
 
   const chooseVideo = async () => { const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['videos'], allowsEditing: false }); if (!result.canceled) { const file = result.assets[0]; await processMotion({ uri: file.uri, fileName: file.fileName ?? `choreo-${Date.now()}.mp4`, mimeType: file.mimeType ?? 'video/mp4', duration: file.duration, source: 'library', webFile: file.file }); } };
   const toggleRecording = async () => { if (!cameraPermission?.granted) { const permission = await requestCameraPermission(); if (!permission.granted) return; } if (!cameraRef.current) return; if (recording) { cameraRef.current.stopRecording(); return; } setRecording(true); try { const video = await cameraRef.current.recordAsync({ maxDuration: 60 }); if (video?.uri) await processMotion({ uri: video.uri, fileName: `choreo-${Date.now()}.mp4`, mimeType: 'video/mp4', source: 'camera' }); } finally { setRecording(false); } };
@@ -943,12 +987,9 @@ export default function App() {
   const refresh = async (userId = me?.user_id) => {
     if (!userId) return;
     try {
-      setRemoteProjects(await api(`/v1/projects?user_id=${userId}`));
+      setRemoteProjects(await fetchProjectsForUser(userId));
       setServerError('');
     } catch (error: any) {
-      // 서버 데이터가 초기화되면 이 기기에 남은 user_id 는 더 이상 존재하지 않는다.
-      // 그대로 두면 매번 401 만 뜨므로 신원을 지우고 다시 이름을 받는다.
-      if (error?.status === 401) { saveMe(null); setMe(null); setRemoteProjects([]); setSelectedId(null); return; }
       setServerError(error?.message ?? '작업 목록을 받아오지 못했어요.');
     }
   };
@@ -966,12 +1007,12 @@ export default function App() {
   useEffect(() => {
     if (!me || page !== 'profile' || !viewedUserId) return;
     setProfile(null);
-    api(`/v1/users/${viewedUserId}/profile?viewer_id=${me.user_id}`).then(setProfile).catch(() => setProfile(null));
+    fetchProfile(viewedUserId, me.user_id).then(setProfile).catch(() => setProfile(null));
   }, [me?.user_id, viewedUserId, page, remoteProjects.length]);
 
   const loadVersions = async (projectId = selected?.id) => {
     if (!projectId || !me) return;
-    try { setVersions(await api(`/v1/projects/${projectId}/versions?user_id=${me.user_id}`)); }
+    try { setVersions(await fetchVersionGraph(projectId, me.user_id)); }
     catch { setVersions(null); }
   };
 
@@ -1015,8 +1056,7 @@ export default function App() {
     if (!wanted) return notify('제목이 필요해요', '작업 이름을 비워 둘 수 없어요.');
     setBusy(true);
     try {
-      await api(`/v1/projects/${selected.id}`, { method: 'PATCH', body: {
-        user_id: me.user_id, name: wanted, license: editDraft.license } });
+      await updateProjectMeta(selected.id, wanted, editDraft.license);
       await refresh();
       setEditOpen(false);
       notify('수정했어요', `${wanted} · ${editDraft.license}`, 'ok');
@@ -1044,20 +1084,26 @@ export default function App() {
     if (to !== null && limit && to > limit + 600000)
       return notify('시간을 확인해 주세요', `작품(${fmtMs(limit)})을 10분 넘게 늘릴 수는 없어요.`);
     if (!proposeDraft.title.trim()) return notify('제목이 필요해요', '무엇을 고쳤는지 한 줄로 적어 주세요.');
+    if (!proposeAsset) return notify('영상이 필요해요', '고친 구간의 영상을 올려주세요.');
     setBusy(true);
     try {
-      const result = await api(`/v1/projects/${selected.id}/versions`, { method: 'POST', body: {
-        user_id: me.user_id, title: proposeDraft.title, note: proposeDraft.note,
-        start_ms: from, end_ms: to, motion: proposeMotion,
-      } });
-      setVersions(result); setProposeOpen(false);
+      const blob = (proposeAsset.webFile ?? await fetch(proposeAsset.uri).then((r) => r.blob())) as Blob;
+      const durationSec = proposeMotion?.duration_ms ? proposeMotion.duration_ms / 1000 : await probeVideoDuration(proposeAsset.uri);
+      const ext = proposeAsset.fileName.includes('.') ? proposeAsset.fileName.split('.').pop()! : 'mp4';
+      const canEditDirect = !!selected.isOwner || selected.viewerPermission === '직접 수정';
+      const result = await submitProposalRow({
+        projectId: selected.id, userId: me.user_id, title: proposeDraft.title, note: proposeDraft.note,
+        startSec: from / 1000, endSec: to / 1000, videoBlob: blob, videoExt: ext,
+        durationSec: durationSec || 0, poseData: motionFramesToPoseFrames(proposeMotionFrames),
+        canEditDirect,
+      });
+      await loadVersions(selected.id);
+      setProposeOpen(false);
       setProposeDraft({ title: '', note: '', from: '', to: '' });
       clearProposalVideo(); setProposePending(false);
       await refresh();
-      const grew = result.extended && result.workMs
-        ? ` 작품이 ${fmtMs(result.workMsBefore)} → ${fmtMs(result.workMs)} 로 길어졌습니다.` : '';
       notify(result.merged ? 'main 에 반영했어요' : '제안을 보냈어요',
-        (result.merged ? '권한이 있어 바로 main 에 올라갔습니다.' : '원작자가 확인하면 main 에 반영됩니다.') + grew, 'ok');
+        result.merged ? '권한이 있어 바로 main 에 올라갔습니다.' : '원작자가 확인하면 main 에 반영됩니다.', 'ok');
     } catch (error: any) { notify('보내지 못했어요', error?.message ?? '다시 시도해 주세요.'); }
     finally { setBusy(false); }
   };
@@ -1103,26 +1149,19 @@ export default function App() {
       .catch(() => setVersionFrames({ key: viewingVersion.id, frames: [] }));
   }, [selected?.id, viewingVersion?.id, page]);
 
-  const setHead = async (version: VersionEntry) => {
-    if (!selected || !me) return;
-    setBusy(true);
-    try {
-      setVersions(await api(`/v1/projects/${selected.id}/versions/${version.id}/head`, {
-        method: 'POST', body: { user_id: me.user_id } }));
-      await refresh();
-      setProjectFrames({ key: '', frames: [] });   // 영상이 바뀌었으니 관절도 다시 받는다
-      playbackRef.current = 0; liveFrameRef.current = 0;
-      notify('현재 버전을 바꿨어요', `v${version.number} · ${version.segment}`, 'ok');
-    } catch (error: any) { notify('바꾸지 못했어요', error?.message ?? '다시 시도해 주세요.'); }
-    finally { setBusy(false); }
+  // 우리 DB엔 "이력은 그대로 두고 가리키는 버전만 바꾸는" head 포인터 개념이 없다(항상 최신
+  // 버전 = head) — 5단계 범위에서 새 컬럼을 추가하는 대신, 정직하게 안 된다고 알린다.
+  const setHead = async (_version: VersionEntry) => {
+    notify('아직 지원하지 않아요', '지금은 항상 최신 버전이 기준이에요 — 다른 버전을 보려면 구간 영상 보기를 써주세요.');
   };
 
   const decideProposal = async (version: VersionEntry, accept: boolean) => {
     if (!selected || !me) return;
     setBusy(true);
     try {
-      setVersions(await api(`/v1/projects/${selected.id}/versions/${version.id}/decide`, {
-        method: 'POST', body: { user_id: me.user_id, accept } }));
+      if (accept) await approveProposalRow(version.id);
+      else await declineProposalRow(version.id, me.user_id);
+      await loadVersions(selected.id);
       await refresh();
     } catch (error: any) { notify('처리하지 못했어요', error?.message ?? '다시 시도해 주세요.'); }
     finally { setBusy(false); }
@@ -1158,7 +1197,7 @@ export default function App() {
 
   useEffect(() => {
     if (!me || page !== 'community') return;
-    api(`/v1/community?viewer_id=${me.user_id}`).then(setCommunity).catch(() => setCommunity(null));
+    fetchCommunity(me.user_id).then(setCommunity).catch(() => setCommunity(null));
   }, [me?.user_id, page]);
 
   /** 하단 탭 이동. '프로필' 탭은 항상 내 프로필이어야 하므로 보고 있던 남의 프로필을 푼다. */
@@ -1174,10 +1213,10 @@ export default function App() {
   const toggleFollow = async (userId: string, following: boolean) => {
     if (!me) return;
     try {
-      if (following) await api(`/v1/users/${userId}/follow?viewer_id=${me.user_id}`, { method: 'DELETE' });
-      else await api(`/v1/users/${userId}/follow`, { method: 'POST', body: { viewer_id: me.user_id } });
-      if (page === 'profile') api(`/v1/users/${userId}/profile?viewer_id=${me.user_id}`).then(setProfile).catch(() => {});
-      if (page === 'community') api(`/v1/community?viewer_id=${me.user_id}`).then(setCommunity).catch(() => {});
+      if (following) await unfollowUser(me.user_id, userId);
+      else await followUser(me.user_id, userId);
+      if (page === 'profile') fetchProfile(userId, me.user_id).then(setProfile).catch(() => {});
+      if (page === 'community') fetchCommunity(me.user_id).then(setCommunity).catch(() => {});
     } catch { notify('처리하지 못했어요', '잠시 후 다시 시도해 주세요.'); }
   };
 
@@ -1193,20 +1232,20 @@ export default function App() {
     if (!wanted) return notify('이름이 필요해요', '다른 참여자에게 보일 이름을 적어 주세요.');
     setBusy(true);
     try {
-      const created: Me = await api('/v1/users', { method: 'POST', body: { name: wanted } });
+      const created: Me = await signInQuick(wanted);
       saveMe(created); setMe(created); setSignInName(''); await refresh(created.user_id); go('home');
     } catch (error: any) { setServerError(error?.message ?? '서버에 연결하지 못했어요.'); }
     finally { setBusy(false); }
   };
 
-  const signOut = () => { saveMe(null); setMe(null); setRemoteProjects([]); setSelectedId(null); go('home'); };
+  const signOut = () => { signOutQuick(); saveMe(null); setMe(null); setRemoteProjects([]); setSelectedId(null); go('home'); };
 
   const joinByCode = async () => {
     const code = joinCode.trim().toUpperCase();
     if (!code || !me) return;
     setBusy(true);
     try {
-      const project: Project = await api(`/v1/invites/${encodeURIComponent(code)}/join`, { method: 'POST', body: { user_id: me.user_id } });
+      const project: Project = await joinProjectByCode(code, me.user_id);
       setJoinCode(''); await refresh(); setSelectedId(project.id); setLicense(project.license); go('version');
     } catch (error: any) { notify('참여하지 못했어요', error?.message ?? '초대 코드를 확인해 주세요.'); }
     finally { setBusy(false); }
@@ -1227,13 +1266,21 @@ export default function App() {
     if (!selected || !me) return;
     const wanted = collabDraft.name.trim();
     if (!wanted) return notify('이름이 필요해요', '함께 작업할 사람의 이름이나 활동명을 적어 주세요.');
-    const body = { user_id: me.user_id, name: wanted, role: collabDraft.role, counts: collabDraft.counts, permission: collabDraft.permission };
     setBusy(true);
     try {
-      const path = collabEditing && collabEditing !== 'new'
-        ? `/v1/projects/${selected.id}/collaborators/${collabEditing.id}`
-        : `/v1/projects/${selected.id}/collaborators`;
-      await api(path, { method: collabEditing && collabEditing !== 'new' ? 'PATCH' : 'POST', body });
+      if (collabEditing && collabEditing !== 'new') {
+        await saveCollaboratorRow({
+          projectId: selected.id, memberId: collabEditing.id,
+          role: collabDraft.role, counts: collabDraft.counts, permission: collabDraft.permission,
+        });
+      } else {
+        // 이름만으로는 실제 계정을 못 찾으므로, 그 사람이 초대 코드로 들어올 때까지는
+        // "초대 대기" 자리로 예약해 둔다(user_id는 null, 이름만 표시).
+        await saveCollaboratorRow({
+          projectId: selected.id, userId: null, invitedName: wanted,
+          role: collabDraft.role, counts: collabDraft.counts, permission: collabDraft.permission,
+        });
+      }
       await refresh(); setCollabEditing(null);
     } catch (error: any) { notify('저장하지 못했어요', error?.message ?? '다시 시도해 주세요.'); }
     finally { setBusy(false); }
@@ -1243,7 +1290,7 @@ export default function App() {
     if (!selected || !me) return;
     setBusy(true);
     try {
-      await api(`/v1/projects/${selected.id}/collaborators/${target.id}?user_id=${me.user_id}`, { method: 'DELETE' });
+      await removeCollaboratorRow(target.id);
       await refresh(); setCollabEditing(null);
     } catch (error: any) { notify('해제하지 못했어요', error?.message ?? '다시 시도해 주세요.'); }
     finally { setBusy(false); }
@@ -1251,27 +1298,32 @@ export default function App() {
 
   const mediaUriOf = (project: Project | null) => project?.videoUrl ? new URL(project.videoUrl, API).toString() : undefined;
 
-  const framesKey = selected ? `${selected.id}:${selected.sourceSha256 ?? ''}` : '';
+  const framesKey = selected ? selected.id : '';
 
   useEffect(() => {
-    if (!selected?.sourceSha256 || projectFrames.key === framesKey) return;
+    if (!selected?.id || projectFrames.key === framesKey) return;
     if (!['version', 'overlay', 'data'].includes(page)) return;
     // 영상이 바뀌었으면 재생 위치도 되돌린다 — 짧은 클립에서 예전 위치로 탐색하면 어긋난다
     playbackRef.current = 0; liveFrameRef.current = 0;
-    api(`/v1/projects/${selected.id}/frames`)
-      .then(data => setProjectFrames({ key: framesKey, frames: data?.frames ?? [] }))
+    fetchLatestVersionFrames(selected.id)
+      .then((data) => setProjectFrames({ key: framesKey, frames: data.frames }))
       .catch(() => setProjectFrames({ key: framesKey, frames: [] }));
   }, [framesKey, page]);
 
   const processing = !!job && job.stage !== 'done' && job.stage !== 'error';
 
   const commitProject = async () => {
-    if (!me) return;
+    if (!me || !asset) return;
     setBusy(true);
     try {
-      const created: Project = await api('/v1/projects', { method: 'POST', body: {
-        user_id: me.user_id, name: name.trim(), license, color: '#7FA5FF', motion: motionRef,
-      } });
+      const blob = (asset.webFile ?? await fetch(asset.uri).then((r) => r.blob())) as Blob;
+      const durationSec = asset.duration ?? (motionRef?.duration_ms ? motionRef.duration_ms / 1000 : await probeVideoDuration(asset.uri));
+      const ext = asset.fileName.includes('.') ? asset.fileName.split('.').pop()! : 'mp4';
+      const created = await createProjectWithVideo({
+        userId: me.user_id, name: name.trim(), license, color: '#7FA5FF',
+        videoBlob: blob, videoExt: ext, durationSec: durationSec || 0,
+        poseData: motionFramesToPoseFrames(motionFrames),
+      });
       await refresh();
       setSelectedId(created.id);
       setProjectFrames({ key: '', frames: [] });
