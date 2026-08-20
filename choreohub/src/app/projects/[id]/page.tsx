@@ -11,9 +11,6 @@ import { createClient } from "@/lib/supabase/client";
 import { fetchProfileNames, displayName, type ProfileNameInfo } from "@/lib/profiles";
 import { useProjectPermission } from "@/lib/useProjectPermission";
 import { CreditTimeline } from "@/components/project/CreditTimeline";
-import type { ProjectLicense } from "@/lib/types";
-
-const LICENSES: ProjectLicense[] = ["연습 전용", "비상업 커버 허용", "리믹스 허용", "사전승인 필요"];
 
 export default function ProjectDetailPage({
   params,
@@ -30,25 +27,17 @@ export default function ProjectDetailPage({
   const openProposalCount = allProposals.filter(
     (p) => p.projectId === id && p.status === "proposed",
   ).length;
-  const updateProjectLicense = useProjectStore((s) => s.updateProjectLicense);
 
   const { canEdit } = useProjectPermission(id, project?.ownerId);
   const [names, setNames] = useState<Map<string, ProfileNameInfo>>(new Map());
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [savingLicense, setSavingLicense] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       const supabase = createClient();
       const uploaderIds = versions.map((v) => v.createdBy);
-      const [map, userResult] = await Promise.all([
-        fetchProfileNames(supabase, uploaderIds),
-        supabase.auth.getUser(),
-      ]);
-      if (cancelled) return;
-      setNames(map);
-      setCurrentUserId(userResult.data.user?.id ?? null);
+      const map = await fetchProfileNames(supabase, uploaderIds);
+      if (!cancelled) setNames(map);
     }
     load();
     return () => {
@@ -56,20 +45,6 @@ export default function ProjectDetailPage({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, versions.length]);
-
-  const isOwner = !!currentUserId && !!project && currentUserId === project.ownerId;
-
-  async function handleLicenseChange(license: ProjectLicense) {
-    if (!project || savingLicense) return;
-    setSavingLicense(true);
-    try {
-      await updateProjectLicense(project.id, license);
-    } catch {
-      // 실패해도 조용히 무시 — 화면은 이전 값을 유지한다.
-    } finally {
-      setSavingLicense(false);
-    }
-  }
 
   if (!project) {
     return (
@@ -119,30 +94,6 @@ export default function ProjectDetailPage({
         <div className="flex gap-4 text-xs text-muted-2">
           <span>인원 {project.memberCount}명</span>
           <span>버전 {versions.length}개</span>
-        </div>
-
-        <div className="rounded-xl border border-border bg-surface p-3">
-          <p className="mb-1.5 text-xs font-medium text-muted">라이선스</p>
-          {isOwner ? (
-            <div className="flex flex-wrap gap-1.5">
-              {LICENSES.map((l) => (
-                <button
-                  key={l}
-                  onClick={() => handleLicenseChange(l)}
-                  disabled={savingLicense}
-                  className={`rounded-full px-2.5 py-1 text-xs transition-colors disabled:opacity-50 ${
-                    project.license === l
-                      ? "bg-accent text-white"
-                      : "border border-border text-muted hover:bg-surface-hover"
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <span className="text-xs text-foreground">{project.license}</span>
-          )}
         </div>
 
         <CreditTimeline versions={versions} names={names} />

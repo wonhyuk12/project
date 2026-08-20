@@ -1,7 +1,5 @@
 export type ProjectStatus = "in_progress" | "completed";
 
-export type ProjectLicense = "연습 전용" | "비상업 커버 허용" | "리믹스 허용" | "사전승인 필요";
-
 export interface Project {
   id: string;
   ownerId: string;
@@ -14,7 +12,6 @@ export interface Project {
   versionCount: number;
   updatedAt: string; // ISO date
   thumbnailColor: string; // placeholder gradient seed until real thumbnails exist
-  license: ProjectLicense;
 }
 
 export interface PoseLandmarkPoint {

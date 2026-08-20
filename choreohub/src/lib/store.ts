@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Project, ProjectStatus, ProjectLicense, Version, PoseFrame } from "./types";
+import type { Project, ProjectStatus, Version, PoseFrame } from "./types";
 import { createClient } from "./supabase/client";
 import { uploadVideo, getVideoUrl } from "./supabase/storage";
 
@@ -35,7 +35,6 @@ interface ProjectRow {
   member_count: number;
   thumbnail_color: string;
   updated_at: string;
-  license: ProjectLicense;
 }
 
 export interface VersionRow {
@@ -64,7 +63,6 @@ function rowToProject(row: ProjectRow, versionCount: number): Project {
     versionCount,
     updatedAt: row.updated_at.slice(0, 10),
     thumbnailColor: row.thumbnail_color,
-    license: row.license,
   };
 }
 
@@ -91,7 +89,6 @@ interface ProjectState {
   hydrate: () => Promise<void>;
   addProject: (input: NewProjectInput) => Promise<Project>;
   addVersion: (input: NewVersionInput) => Promise<Version>;
-  updateProjectLicense: (projectId: string, license: ProjectLicense) => Promise<void>;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -202,14 +199,5 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       ),
     }));
     return version;
-  },
-
-  updateProjectLicense: async (projectId, license) => {
-    const supabase = createClient();
-    const { error } = await supabase.from("projects").update({ license }).eq("id", projectId);
-    if (error) throw error;
-    set((state) => ({
-      projects: state.projects.map((p) => (p.id === projectId ? { ...p, license } : p)),
-    }));
   },
 }));
