@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<!-- ===================================================================
+     index.html  —  화면의 뼈대 (HTML)
+     - 화면은 크게 3덩어리: 로그인 화면 / 메인 화면 / 확인 팝업
+     - 처음엔 로그인 화면만 보이고, 로그인 성공하면 메인 화면으로 바뀝니다.
+       (보이고 숨기는 것은 app.js 가 담당합니다.)
+==================================================================== -->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <!-- 모바일에서 화면이 확대/축소 없이 딱 맞게 보이도록 하는 설정 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>매입장부</title>
+
+  <!-- PWA(홈 화면 추가)용 설정 파일 연결 -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#b8860b" />
+
+  <!-- 우리가 만든 스타일(글자 크게/버튼 크게) 연결 -->
+  <!-- ?v=... 는 '캐시버스팅': 코드를 고칠 때마다 이 숫자를 올리면 브라우저가
+       옛 파일을 재사용하지 않고 새로 받아옵니다. (배포 후 옛 화면이 남는 문제 예방) -->
+  <link rel="stylesheet" href="/style.css?v=1.7" />
+</head>
+<body>
+
+  <!-- ============================================================
+       (0) 알림 배너 — 저장/수정/삭제/복구 성공·실패 시 화면 상단에 잠깐 뜸
+            (성공은 초록, 실패는 빨강. app.js 가 내용/색을 채우고 보여줌)
+  ============================================================= -->
+  <div id="banner" class="banner" hidden></div>
+
+
+  <!-- ============================================================
+       (1) 로그인 화면
+  ============================================================= -->
+  <section id="login-screen" class="screen">
+    <h1 class="login-title">매입장부</h1>
+
+    <label class="field-label" for="email">이메일</label>
+    <input id="email" type="email" class="text-input"
+           inputmode="email" autocomplete="username"
+           placeholder="이메일 주소" />
+
+    <label class="field-label" for="password">비밀번호</label>
+    <input id="password" type="password" class="text-input"
+           autocomplete="current-password"
+           placeholder="비밀번호" />
+
+    <!-- 로그인 실패 등 안내 문구가 여기에 표시됩니다 -->
+    <p id="login-error" class="error-text"></p>
+
+    <button id="login-btn" class="big-btn">로그인</button>
+  </section>
+
+
+  <!-- ============================================================
+       (1-2) 업종군 선택 화면 (업종 미정 계정의 첫 로그인) — 처음엔 숨김  [3업종군 플랫폼]
+             · retail(재고형)만 지금 사용 가능, 나머지는 '준비 중'
+  ============================================================= -->
+  <section id="family-select-screen" class="screen" hidden>
+    <header class="top-bar">
+      <span class="shop-name">업종군 선택</span>
+      <button id="fs-logout-btn" class="text-btn">로그아웃</button>
+    </header>
+
+    <p class="fs-help">우리 가게에 맞는 종류를 골라 주세요. 한 번 고르면 다음부터 바로 그 화면으로 들어갑니다.</p>
+
+    <div class="family-cards">
+      <button type="button" class="family-card" data-family="retail">
+        <div class="fc-title">재고형</div>
+        <div class="fc-desc">매입 → 재고 → 판매 (금은방·중고·전당포 등)</div>
+        <div class="fc-status ready">사용 가능</div>
+      </button>
+      <button type="button" class="family-card" data-family="membership">
+        <div class="fc-title">회원형</div>
+        <div class="fc-desc">회원·회원권·출석·회비 (헬스장·태권도장 등)</div>
+        <div class="fc-status soon">준비 중</div>
+      </button>
+      <button type="button" class="family-card" data-family="manufacturing">
+        <div class="fc-title">제조형</div>
+        <div class="fc-desc">원재료 → 생산 → 판매 (음식점·공방·공장 등)</div>
+        <div class="fc-status soon">준비 중</div>
+      </button>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       (1-3) '준비 중' 화면 (회원형·제조형 선택 시) — 처음엔 숨김  [3업종군 플랫폼]
+  ============================================================= -->
+  <section id="coming-soon-screen" class="screen" hidden>
+    <header class="top-bar">
+      <button id="cs-back-btn" class="text-btn">← 업종군</button>
+      <span class="shop-name">준비 중</span>
+      <button id="cs-logout-btn" class="text-btn">로그아웃</button>
+    </header>
+
+    <div class="coming-soon-body">
+      <div class="cs-emoji">🚧</div>
+      <h2 class="cs-title"><span id="coming-soon-name"></span> 화면은 준비 중입니다</h2>
+      <p class="cs-desc">이 업종군 기능은 곧 추가됩니다. 지금은 재고형만 사용할 수 있어요.</p>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       (1-4) 회원형: 회원 목록 화면 — 처음엔 숨김  [회원형 2탄]
+  ============================================================= -->
+  <section id="member-main-screen" class="screen" hidden>
+    <header class="top-bar">
+      <span id="member-shop-name" class="shop-name">가게</span>
+      <button id="plan-manage-btn" class="text-btn" title="회원권 상품">🎟 회원권</button>
+      <button id="member-logout-btn" class="text-btn">로그아웃</button>
+    </header>
+
+    <button id="attendance-btn" class="big-btn code-sale-btn">✅ 오늘 출석 체크</button>
+    <button id="member-add-btn" class="big-btn">+ 회원 등록</button>
+
+    <div class="list-controls">
+      <input id="member-search" type="search" class="text-input"
+             placeholder="🔍 이름·연락처로 찾기" autocomplete="off" />
+    </div>
+
+    <!-- 회원 / 휴지통 전환 -->
+    <div class="segmented" id="member-view-segment">
+      <button class="seg-btn active" data-mview="active">회원</button>
+      <button class="seg-btn" data-mview="trash">휴지통</button>
+    </div>
+
+    <div id="member-list" class="record-list"></div>
+    <button id="member-load-more" class="big-btn gray" hidden>더 보기</button>
+  </section>
+
+
+  <!-- ============================================================
+       (1-5) 회원형: 회원 상세 화면 — 처음엔 숨김  [회원형 2탄]
+  ============================================================= -->
+  <section id="member-detail-screen" class="screen" hidden>
+    <header class="top-bar">
+      <button id="member-back-btn" class="text-btn">← 목록</button>
+      <span class="shop-name">회원 상세</span>
+      <span class="top-bar-spacer"></span>
+    </header>
+    <div id="member-detail-body"></div>
+  </section>
+
+
+  <!-- ============================================================
+       (1-7) 회원형: 오늘 출석 체크 화면 — 처음엔 숨김  [회원형 2-3]
+  ============================================================= -->
+  <section id="attendance-screen" class="screen" hidden>
+    <header class="top-bar">
+      <button id="att-back-btn" class="text-btn">← 회원</button>
+      <span class="shop-name">출석 체크</span>
+      <span class="top-bar-spacer"></span>
+    </header>
+    <p id="att-date" class="att-date"></p>
+    <div class="list-controls">
+      <input id="att-search" type="search" class="text-input"
+             placeholder="🔍 이름·연락처로 찾기" autocomplete="off" />
+    </div>
+    <div id="att-list" class="record-list"></div>
+  </section>
+
+
+  <!-- ============================================================
+       (1-6) 회원권 상품 관리 화면 — 처음엔 숨김  [회원형 2-2]
+  ============================================================= -->
+  <section id="plan-manage-screen" class="screen" hidden>
+    <header class="top-bar">
+      <button id="plan-back-btn" class="text-btn">← 회원</button>
+      <span class="shop-name">회원권 상품</span>
+      <span class="top-bar-spacer"></span>
+    </header>
+    <div class="cat-manage">
+      <p class="cat-help">회원에게 팔 회원권 종류를 만들어 두세요. (기간권=며칠 / 횟수권=몇 회)</p>
+      <div id="plan-list" class="cat-list"></div>
+      <button id="plan-add-btn" class="big-btn">+ 상품 추가</button>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       (13) 회원권 상품 추가/수정 팝업 — 처음엔 숨김  [회원형 2-2]
+  ============================================================= -->
+  <div id="plan-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <h2 class="modal-title" id="plan-modal-title">상품 추가</h2>
+
+      <label class="field-label" for="p-name">상품 이름</label>
+      <input id="p-name" type="text" class="text-input" placeholder="예: 3개월권, 10회권" />
+
+      <label class="field-label" for="p-kind">종류</label>
+      <select id="p-kind" class="text-input">
+        <option value="period">기간권 (며칠 동안)</option>
+        <option value="count">횟수권 (몇 회)</option>
+      </select>
+
+      <div id="p-period-row">
+        <label class="field-label" for="p-duration">유효 일수</label>
+        <input id="p-duration" type="text" class="text-input" inputmode="numeric" placeholder="예: 90" />
+      </div>
+      <div id="p-count-row" hidden>
+        <label class="field-label" for="p-count">총 횟수</label>
+        <input id="p-count" type="text" class="text-input" inputmode="numeric" placeholder="예: 10" />
+      </div>
+
+      <label class="field-label" for="p-price">가격(원)</label>
+      <input id="p-price" type="text" class="text-input" inputmode="numeric" placeholder="예: 300000" />
+
+      <div class="modal-buttons">
+        <button id="plan-cancel-btn" class="big-btn gray">취소</button>
+        <button id="plan-save-btn" class="big-btn">저장</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (14) 회원권 판매 팝업 (회원 상세 → 회원권 판매) — 처음엔 숨김  [회원형 2-2]
+  ============================================================= -->
+  <div id="ms-sale-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <h2 class="modal-title">회원권 판매</h2>
+      <p id="ms-sale-member" class="sale-item-info"></p>
+
+      <label class="field-label" for="ms-plan">상품</label>
+      <select id="ms-plan" class="text-input"></select>
+
+      <label class="field-label" for="ms-start">시작일</label>
+      <input id="ms-start" type="date" class="text-input" />
+
+      <label class="field-label" for="ms-price">받은 금액(원)</label>
+      <input id="ms-price" type="text" class="text-input" inputmode="numeric" />
+
+      <label class="field-label" for="ms-memo">메모</label>
+      <input id="ms-memo" type="text" class="text-input" />
+
+      <div class="modal-buttons">
+        <button id="ms-cancel-btn" class="big-btn gray">취소</button>
+        <button id="ms-confirm-btn" class="big-btn">판매</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (12) 회원 등록/수정 팝업 — 처음엔 숨김  [회원형 2탄]
+  ============================================================= -->
+  <div id="member-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <h2 class="modal-title" id="member-modal-title">회원 등록</h2>
+
+      <!-- 사진 (선택) -->
+      <div class="member-photo-row">
+        <div id="member-photo-preview" class="member-photo-preview">사진 없음</div>
+        <button type="button" id="member-photo-btn" class="small-btn">사진 선택</button>
+        <input id="member-photo-input" type="file" accept="image/*" hidden />
+      </div>
+
+      <label class="field-label" for="m-name">이름</label>
+      <input id="m-name" type="text" class="text-input" placeholder="회원 이름" />
+
+      <label class="field-label" for="m-phone">연락처</label>
+      <input id="m-phone" type="text" class="text-input" inputmode="tel" placeholder="예: 010-1234-5678" />
+
+      <label class="field-label" for="m-birth">생년월일</label>
+      <input id="m-birth" type="date" class="text-input" />
+
+      <label class="field-label" for="m-joined">등록일</label>
+      <input id="m-joined" type="date" class="text-input" />
+
+      <label class="field-label" for="m-memo">메모</label>
+      <input id="m-memo" type="text" class="text-input" />
+
+      <div class="modal-buttons">
+        <button id="member-cancel-btn" class="big-btn gray">취소</button>
+        <button id="member-save-btn" class="big-btn">저장</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (2) 메인 화면 (로그인 후 표시) — 처음엔 숨김(hidden)
+  ============================================================= -->
+  <section id="main-screen" class="screen" hidden>
+    <!-- 상단: 가게 이름 + 로그아웃 (진한 네이비 바) -->
+    <header class="top-bar">
+      <span id="shop-name" class="shop-name">가게</span>
+      <button id="categories-btn" class="text-btn" title="분류 관리" aria-label="분류 관리">⚙️</button>
+      <button id="logout-btn" class="text-btn">로그아웃</button>
+    </header>
+
+    <!-- 입고 사진 넣기: 두 가지 방법
+         · 사진 찍기   → 카메라로 바로 촬영 (capture=environment: 후면 카메라)
+         · 사진 올리기 → 앨범/파일에서 기존 사진 고르기 (capture 없음)
+         버튼마다 숨겨진 파일 입력칸이 따로 있고, 둘 다 같은 처리로 이어집니다. -->
+    <div class="photo-buttons">
+      <button id="take-photo-btn" class="big-btn">📷 사진 찍기</button>
+      <button id="upload-photo-btn" class="big-btn">🖼 사진 올리기</button>
+    </div>
+
+    <!-- 카메라용 (촬영) -->
+    <input id="photo-input" type="file" accept="image/*" capture="environment" hidden />
+    <!-- 앨범/파일용 (기존 사진 선택) — capture 를 빼서 파일 선택창이 열립니다 -->
+    <input id="upload-input" type="file" accept="image/*" hidden />
+
+    <!-- [코드 판매] 코드로 판매: 물건 사진을 찍으면 AI가 품목 코드를 읽어 재고를 찾아 판매합니다 -->
+    <button id="sale-by-code-btn" class="big-btn code-sale-btn">🏷 코드로 판매</button>
+    <input id="code-photo-input" type="file" accept="image/*" capture="environment" hidden />
+
+    <!-- 사진 인식 실패 시 이어가기 안내 (입고 최종판) — 평소엔 숨김.
+         [다시 찍기]=카메라/파일 다시 열기 / [직접 입력]=실패 사진을 유지한 채 빈 확인 팝업 -->
+    <div id="analyze-recovery" class="recovery-box" hidden>
+      <p class="recovery-msg">사진을 읽지 못했어요. 다시 찍어 주세요.</p>
+      <div class="recovery-buttons">
+        <button id="retake-btn" class="big-btn">다시 찍기</button>
+        <button id="manual-entry-btn" class="big-btn gray">직접 입력</button>
+      </div>
+    </div>
+
+    <!-- ---------- 검색 / 필터 / 기간 (사장님이 직접 찾는 곳) ----------
+         ※ 판매됨 탭에서는 이 영역을 숨깁니다(출고 목록엔 이 필터가 안 붙음). -->
+    <div class="list-controls" id="list-controls">
+      <!-- 품목명 검색창 -->
+      <input id="search-input" type="search" class="text-input"
+             placeholder="🔍 품목명으로 찾기" autocomplete="off" />
+
+      <!-- 분류 필터 버튼: [전체 + 업종별 분류들] — app.js 가 /api/me 설정으로 채웁니다 -->
+      <div class="filter-row" id="filter-row"></div>
+
+      <!-- 기간 선택 (시작일 ~ 종료일) -->
+      <div class="date-row">
+        <input id="start-date" type="date" class="date-input" aria-label="시작일" />
+        <span class="date-sep">~</span>
+        <input id="end-date" type="date" class="date-input" aria-label="종료일" />
+      </div>
+    </div>
+
+    <!-- 재고 / 판매됨 / 휴지통 전환 (3분할 세그먼트) -->
+    <div class="segmented" id="view-segment">
+      <button class="seg-btn active" data-view="stock">재고</button>
+      <button class="seg-btn" data-view="sold">판매됨</button>
+      <button class="seg-btn" data-view="trash">휴지통</button>
+    </div>
+
+    <!-- 입고 목록이 여기에 채워집니다 (app.js) -->
+    <div id="record-list" class="record-list"></div>
+
+    <!-- "더 보기" 버튼 (다음 20개가 더 있을 때만 보임) -->
+    <button id="load-more-btn" class="big-btn gray" hidden>더 보기</button>
+  </section>
+
+
+  <!-- ============================================================
+       (2-1) 상세 화면 (목록에서 한 건 탭 → 자세히 보기) — 처음엔 숨김
+  ============================================================= -->
+  <section id="detail-screen" class="screen" hidden>
+    <header class="top-bar">
+      <button id="detail-back-btn" class="text-btn">← 목록</button>
+      <span class="shop-name">입고 상세</span>
+      <span class="top-bar-spacer"></span>
+    </header>
+
+    <!-- 상세 내용(사진·필드·이력·버튼)은 app.js 가 채웁니다 -->
+    <div id="detail-body"></div>
+  </section>
+
+
+  <!-- ============================================================
+       (2-2) 정산 화면 (하단 '정산' 탭) — 처음엔 숨김  [Phase 3]
+  ============================================================= -->
+  <section id="report-screen" class="screen" hidden>
+    <header class="top-bar">
+      <span class="shop-name">정산</span>
+      <span class="top-bar-spacer"></span>
+    </header>
+
+    <!-- 1) 기간 선택 -->
+    <div class="period-tabs">
+      <button class="period-btn active" data-period="this_month">이번 달</button>
+      <button class="period-btn" data-period="last_month">지난 달</button>
+      <button class="period-btn" data-period="last7">최근 7일</button>
+      <button class="period-btn" data-period="custom">직접 선택</button>
+    </div>
+    <div id="custom-period" class="date-row" hidden>
+      <input id="report-start" type="date" class="date-input" aria-label="시작일" />
+      <span class="date-sep">~</span>
+      <input id="report-end" type="date" class="date-input" aria-label="종료일" />
+    </div>
+    <p id="period-label" class="period-label"></p>
+
+    <!-- 2) 요약 카드 4개 -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">매출</div>
+        <div id="sum-revenue" class="summary-value">-</div>
+        <div id="chg-revenue" class="summary-change"></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">매입 마진</div>
+        <div id="sum-margin" class="summary-value">-</div>
+        <div id="chg-margin" class="summary-change"></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">발생비용</div>
+        <div id="sum-expense" class="summary-value">-</div>
+        <div id="chg-expense" class="summary-change"></div>
+      </div>
+      <div class="summary-card net">
+        <div class="summary-label">순이익</div>
+        <div id="sum-net" class="summary-value big">-</div>
+        <div id="chg-net" class="summary-change"></div>
+      </div>
+    </div>
+
+    <!-- 3) 그래프 3개 -->
+    <div class="chart-box">
+      <h3 class="chart-title">일별 매출·순이익</h3>
+      <div class="chart-canvas-wrap"><canvas id="chart-daily"></canvas></div>
+    </div>
+
+    <div class="chart-box">
+      <h3 class="chart-title">요일 × 시간대 판매</h3>
+      <div id="heatmap" class="heatmap"></div>
+    </div>
+
+    <div class="chart-box">
+      <h3 class="chart-title">분류별 매출</h3>
+      <div class="chart-canvas-wrap"><canvas id="chart-category"></canvas></div>
+      <p id="chart-empty" class="empty-text small" hidden>이 기간에 판매가 없습니다.</p>
+    </div>
+
+    <!-- 4) 비용 관리 -->
+    <div class="expense-area">
+      <div class="expense-head">
+        <h3 class="chart-title">비용</h3>
+        <button id="add-expense-btn" class="small-btn">+ 비용 추가</button>
+      </div>
+      <div id="expense-list" class="expense-list"></div>
+    </div>
+
+    <!-- 5) 엑셀 내보내기 -->
+    <button id="excel-btn" class="big-btn gray">엑셀 내보내기</button>
+
+    <!-- 6) AI 인식 실패 기록 (접기/펼치기) — 실패했지만 아직 안 버린 사진들 [입고 최종판] -->
+    <details class="failures-box">
+      <summary class="failures-summary">AI 인식 실패 기록 <span id="failures-count" class="failures-count"></span></summary>
+      <div id="failures-list" class="failures-list"></div>
+    </details>
+  </section>
+
+
+  <!-- ============================================================
+       (2-3) 분류 관리 화면 (헤더 ⚙️ → 분류 관리) — 처음엔 숨김  [분류 사용자 정의]
+  ============================================================= -->
+  <section id="categories-screen" class="screen" hidden>
+    <header class="top-bar">
+      <button id="cat-back-btn" class="text-btn">← 목록</button>
+      <span class="shop-name">분류 관리</span>
+      <span class="top-bar-spacer"></span>
+    </header>
+
+    <div class="cat-manage">
+      <p class="cat-help">물건을 나눌 분류를 직접 만들어 쓰세요. (예: 반지, 목걸이) 순서는 위/아래로 바꿀 수 있어요.</p>
+      <!-- 분류 목록이 여기 채워집니다 (app.js) -->
+      <div id="cat-list" class="cat-list"></div>
+      <button id="cat-add-btn" class="big-btn">+ 분류 추가</button>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       (10) 분류 추가/수정 팝업 — 처음엔 숨김  [분류 사용자 정의]
+  ============================================================= -->
+  <div id="cat-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <h2 class="modal-title" id="cat-modal-title">분류 추가</h2>
+
+      <label class="field-label" for="cat-name">이름</label>
+      <input id="cat-name" type="text" class="text-input" placeholder="예: 반지, 목걸이" />
+
+      <label class="field-label">색</label>
+      <!-- 6가지 색 스와치가 여기 채워집니다 (app.js) -->
+      <div id="cat-color-row" class="cat-color-row"></div>
+
+      <div class="modal-buttons">
+        <button id="cat-cancel-btn" class="big-btn gray">취소</button>
+        <button id="cat-save-btn" class="big-btn">저장</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (11) 코드 재고 선택 팝업 (코드로 판매 → 같은 코드 재고 여러 건) — 처음엔 숨김  [코드 판매]
+  ============================================================= -->
+  <div id="code-group-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <h2 class="modal-title" id="code-group-title">재고 선택</h2>
+      <p class="code-group-sub" id="code-group-sub"></p>
+      <!-- 같은 코드 재고 목록(오래된 순)이 채워집니다. 탭하면 판매 팝업이 열립니다. -->
+      <div id="code-group-list" class="code-group-list"></div>
+      <div class="modal-buttons">
+        <button id="code-group-cancel-btn" class="big-btn gray">취소</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (3) 확인 팝업 (AI 인식 결과 확인/수정) — 처음엔 숨김
+  ============================================================= -->
+  <div id="confirm-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <h2 class="modal-title">입고 내용 확인</h2>
+
+      <!-- 입력 필드는 업종 설정에 맞춰 app.js 가 채웁니다 (cf-<key> 형태) -->
+      <div id="confirm-fields"></div>
+
+      <div class="modal-buttons">
+        <button id="cancel-btn" class="big-btn gray">취소</button>
+        <button id="save-btn" class="big-btn">저장</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (4) 로딩 표시 (사진 분석 중) — 처음엔 숨김
+  ============================================================= -->
+  <div id="loading-overlay" class="modal-overlay" hidden>
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p class="loading-text">사진을 읽고 있어요...</p>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (5) 수정 팝업 (상세 화면 → [수정]) — 처음엔 숨김
+            확인 팝업과 같은 6개 필드지만, 기존 기록을 고치는 용도.
+  ============================================================= -->
+  <div id="edit-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <h2 class="modal-title">입고 내용 수정</h2>
+
+      <!-- 입력 필드는 업종 설정에 맞춰 app.js 가 채웁니다 (ef-<key> 형태) -->
+      <div id="edit-fields"></div>
+
+      <div class="modal-buttons">
+        <button id="edit-cancel-btn" class="big-btn gray">취소</button>
+        <button id="edit-save-btn" class="big-btn">저장</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (6) 판매 팝업 (재고 물건을 판매 처리) — 처음엔 숨김  [Phase 2]
+            판매가·판매경로·메모를 받고, "예상 마진"을 실시간으로 보여줍니다.
+  ============================================================= -->
+  <div id="sale-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <h2 class="modal-title">판매 처리</h2>
+
+      <!-- 어떤 물건을 파는지 (품목명·매입가) 안내 -->
+      <p id="sale-item-info" class="sale-item-info"></p>
+
+      <label class="field-label" for="s-price">판매가(원)</label>
+      <input id="s-price" type="text" class="text-input" inputmode="numeric"
+             placeholder="예: 700000" />
+
+      <!-- 예상 마진 = 판매가 − 매입가 (실시간, +는 초록 −는 빨강) -->
+      <p id="sale-margin" class="sale-margin"></p>
+
+      <label class="field-label" for="s-channel">판매 경로</label>
+      <select id="s-channel" class="text-input">
+        <option value="store">매장</option>
+        <option value="phone">전화</option>
+        <option value="other">기타</option>
+      </select>
+
+      <label class="field-label" for="s-memo">메모</label>
+      <input id="s-memo" type="text" class="text-input" />
+
+      <div class="modal-buttons">
+        <button id="sale-cancel-btn" class="big-btn gray">취소</button>
+        <button id="sale-confirm-btn" class="big-btn">판매</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (7) 사진 확대 (상세 화면에서 사진 탭 → 크게 보기) — 처음엔 숨김
+            아무 곳이나 탭하면 닫힙니다.
+  ============================================================= -->
+  <div id="image-zoom" class="image-zoom-overlay" hidden>
+    <img id="zoom-img" src="" alt="입고 사진 원본" />
+  </div>
+
+
+  <!-- ============================================================
+       (8) 비용 추가 팝업 (정산 화면 → [+ 비용 추가]) — 처음엔 숨김  [Phase 3]
+  ============================================================= -->
+  <div id="expense-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <h2 class="modal-title">비용 추가</h2>
+
+      <label class="field-label" for="x-name">이름</label>
+      <input id="x-name" type="text" class="text-input" placeholder="예: 월세, 세공비" />
+
+      <label class="field-label" for="x-amount">금액(원)</label>
+      <input id="x-amount" type="text" class="text-input" inputmode="numeric" placeholder="예: 800000" />
+
+      <label class="field-label" for="x-date">날짜</label>
+      <input id="x-date" type="date" class="text-input" />
+
+      <label class="field-label" for="x-memo">메모</label>
+      <input id="x-memo" type="text" class="text-input" />
+
+      <div class="modal-buttons">
+        <button id="expense-cancel-btn" class="big-btn gray">취소</button>
+        <button id="expense-add-btn" class="big-btn">추가</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       (9) 하단 탭 바 [입고 | 정산] — 로그인 후 목록/정산 화면에서만 보임  [Phase 3]
+  ============================================================= -->
+  <nav id="tab-bar" class="tab-bar" hidden>
+    <button class="tab-btn active" data-tab="intake">📷 입고</button>
+    <button class="tab-btn" data-tab="report">📊 정산</button>
+  </nav>
+
+
+  <!-- Supabase 로그인 라이브러리 (CDN에서 불러오기) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js (정산 그래프용) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <!-- 우리가 만든 화면 동작 코드 (?v=... 캐시버스팅: 고칠 때마다 숫자를 올리세요) -->
+  <script src="/app.js?v=1.7"></script>
+</body>
+</html>

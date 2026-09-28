@@ -1,0 +1,24 @@
+# ===== 비밀 정보 (절대 git에 올리면 안 됨) =====
+# .env: 실제 API 키·비밀번호가 들어있는 파일
+.env
+# goldplaza*.txt: 평문 비밀번호 메모 (goldplaza.txt, "goldplaza 계정.txt" 등)
+goldplaza*.txt
+# *계정*.txt: 이름에 '계정'이 들어간 메모 파일도 안전하게 제외
+*계정*.txt
+
+# ===== 가상환경 (라이브러리 창고, 공유 불필요) =====
+# goldbusiness: 우리가 쓰는 가상환경 폴더
+goldbusiness/
+venv/
+.venv/
+
+# ===== 파이썬이 자동으로 만드는 임시 파일 =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ===== 편집기/OS 부산물 =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

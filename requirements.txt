@@ -1,0 +1,43 @@
+# ===================================================================
+# requirements.txt  —  이 프로젝트가 필요로 하는 파이썬 라이브러리 목록
+# -------------------------------------------------------------------
+# 설치 방법 (가상환경을 켠 상태에서):
+#   pip install -r requirements.txt
+#
+# 여기 적힌 것은 "이 버전 이상이면 된다"는 하한선입니다.
+# 아래 [검증된 버전]은 2026-07-12 기준 실제로 돌려서 정상 확인한 버전입니다.
+# 나중에 환경이 꼬여 재현이 안 되면, 그 버전으로 정확히 맞추면(== 로 고정) 됩니다.
+#
+# [검증된 버전] (2026-07-12, 가상환경 goldbusiness, Python 3.13)
+#   fastapi 0.139.0 / uvicorn 0.51.0 / python-multipart 0.0.32
+#   pydantic 2.13.4 / python-dotenv 1.2.2 / supabase 2.31.0
+#   google-genai 2.11.0 / Pillow 12.3.0
+# ===================================================================
+
+# --- 웹 서버 (백엔드 뼈대) ---
+fastapi>=0.115.0            # API 를 쉽게 만드는 웹 프레임워크
+uvicorn[standard]>=0.30.0  # FastAPI 앱을 실제로 구동시키는 서버 프로그램
+python-multipart>=0.0.9    # 사진 파일 업로드(form-data)를 받기 위해 필요
+
+# --- 설정값 관리 ---
+pydantic>=2.7.0           # 데이터 검증 (FastAPI 가 내부에서도 사용)
+python-dotenv>=1.0.0      # .env 파일을 읽어 환경변수로 넣어 줌
+#   ※ pydantic-settings 는 쓰지 않습니다. (설정은 python-dotenv 로 읽음)
+
+# --- Supabase (DB · 사진 저장소 · 로그인) ---
+supabase>=2.7.0           # supabase-py: 파이썬에서 Supabase 를 다루는 공식 라이브러리
+
+# --- Gemini (AI 글자 인식) ---
+#   ※ 하한을 1.0.0 으로 둡니다. 지금 코드는 새 API(genai.Client,
+#     client.models.generate_content, response.usage_metadata)를 쓰는데,
+#     0.x 초기 버전은 API 가 달라 깨집니다. (구버전 google-generativeai 아님!)
+google-genai>=1.0.0       # Gemini 최신 SDK
+
+# --- 이미지 처리 ---
+#   사진 리사이즈·JPEG 압축(image_utils.py)과 PWA 아이콘 생성(make_icons.py)에 사용
+Pillow>=10.3.0
+
+# --- 엑셀 내보내기 (정산) [Phase 3] ---
+#   정산 화면의 [엑셀 내보내기]에서 xlsx 파일을 만드는 데 사용(report.py).
+#   ※ 아직 설치 안 돼 있으면: goldbusiness\Scripts\python.exe -m pip install openpyxl
+openpyxl>=3.1.0
