@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>M-EMS 대시보드 — 보령시 수산업 전기 전략</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">M-EMS</span>
+    <span class="brand-sub">보령시 수산업 전기 사용 전략 대시보드</span>
+  </div>
+  <div class="controls">
+    <label for="yearSelect">기준 연도</label>
+    <select id="yearSelect">
+      <option value="">전체(2023~2025 합계)</option>
+      <option value="2023">2023</option>
+      <option value="2024">2024</option>
+      <option value="2025" selected>2025</option>
+    </select>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <h2>시장 개요</h2>
+    <p class="hint">원본 데이터는 추정 모델치입니다. 상세 근거는 서버의 PROCESS.md 참고.</p>
+    <div id="overviewCards" class="card-grid">
+      <div class="card skeleton">불러오는 중…</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>업종별 전기요금 비중</h2>
+    <div id="industryChart" class="bar-list">
+      <div class="card skeleton">불러오는 중…</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>월별 계절 패턴</h2>
+    <div id="monthlyMeta" class="hint"></div>
+    <div id="monthlyChart" class="month-bars"></div>
+  </section>
+
+  <section class="panel two-col">
+    <div class="col">
+      <h2>절감 시뮬레이션</h2>
+      <p class="hint">기본값은 경기도 소규모시설 EMS 지원사업 실증치(사용량 -6.2%, 요금 -4.7%)</p>
+      <form id="savingsForm" class="calc-form">
+        <label>도입 사업장 수
+          <input type="number" id="adoptionSites" value="20" min="0" />
+        </label>
+        <label>사용량 절감률(%)
+          <input type="number" id="usageReduction" value="6.2" step="0.1" />
+        </label>
+        <label>요금 절감률(%)
+          <input type="number" id="costReduction" value="4.7" step="0.1" />
+        </label>
+        <button type="submit">계산하기</button>
+      </form>
+      <div id="savingsResult" class="result-box"></div>
+    </div>
+
+    <div class="col">
+      <h2>구독 매출 시뮬레이션</h2>
+      <p class="hint">고객 수 구간별 예상 매출 (기본 요금 49,900원)</p>
+      <form id="revenueForm" class="calc-form">
+        <label>고객 수 목록(쉼표 구분)
+          <input type="text" id="customerCounts" value="20,50,200,400,1000" />
+        </label>
+        <label>월 구독료(원)
+          <input type="number" id="monthlyFee" value="49900" step="100" />
+        </label>
+        <button type="submit">계산하기</button>
+      </form>
+      <div id="revenueResult" class="result-box"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>AI 전략 리포트 <span class="badge">Gemini</span></h2>
+    <p class="hint">업종 우선순위·계절 전략·IR 카피·도입 로드맵·예상 Q&amp;A를 한 번에 생성합니다. 약 15~30초 소요됩니다.</p>
+    <div class="report-actions">
+      <button id="genMarketReport" type="button">전체 시장 전략 리포트 생성</button>
+      <button id="copyReport" type="button" class="secondary" disabled>복사</button>
+      <button id="downloadReport" type="button" class="secondary" disabled>.md 다운로드</button>
+    </div>
+    <div id="reportStatus" class="hint"></div>
+    <article id="reportOutput" class="report-output"></article>
+  </section>
+
+  <section class="panel">
+    <h2>업종별 딥다이브 브리핑 <span class="badge">Gemini</span></h2>
+    <div class="calc-form">
+      <label>업종 선택
+        <select id="industrySelect"><option value="">불러오는 중…</option></select>
+      </label>
+      <button id="genIndustryReport" type="button">이 업종 브리핑 생성</button>
+    </div>
+    <div id="industryReportStatus" class="hint"></div>
+    <article id="industryReportOutput" class="report-output"></article>
+  </section>
+
+</main>
+
+<footer>
+  M-EMS Strategy API · 로컬 데모용 대시보드 · 데이터 출처: 보령시_수산업_전기예측_한글판.csv (추정 모델)
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

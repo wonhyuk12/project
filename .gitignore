@@ -1,0 +1,12 @@
+# 가상환경 (실수로 들어있던 폴더, 프로젝트 파일 아님)
+wh2026/
+
+# 파이썬
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
