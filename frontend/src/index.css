@@ -1,0 +1,22 @@
+
+body {
+  margin: 0;
+  background: #c5dafb;
+  color: #1B2638;
+  font-family: 'Noto Sans KR', system-ui, sans-serif;
+}
+
+a {
+  color: #1F5FA8;
+  text-decoration: none;
+}
+
+.tw-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tw-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(12, 35, 64, 0.12);
+}
+
