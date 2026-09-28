@@ -1,0 +1,33 @@
+universe loaded: 3265973 rows in 2.0s
+2026-09-02 18:37:42,475 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 18:40:51,176 INFO rsi_reversal: 21135 signals -> 21115 trades executed (2018-01-01 ~ 2023-12-31)
+backtest took 386.6s -> 21115 trades
+
+=== summary (all years) ===
+{'n_signals_executed': 21115, 'n_delisted_early': 2, 'mean_return': np.float64(0.005179484345217192), 'median_return': np.float64(-0.0006502320746036215), 'win_rate': np.float64(0.49713473833767463), 'mdd': np.float64(-0.8839299577857318)}
+
+=== summary (ex-2020) ===
+{'n_trades': 18135, 'mean_return': np.float64(-0.004314553517682943), 'median_return': np.float64(-0.004293062334356001), 'win_rate': np.float64(0.47835676867934934)}
+
+distribution:
+ 0.05   -0.181741
+0.25   -0.057476
+0.50   -0.000650
+0.75    0.057717
+0.95    0.233183
+Name: net_return, dtype: float64
+
+yearly:
+    year  n_trades  mean_return  median_return  win_rate
+0  2018      3434    -0.019703      -0.015318  0.425451
+1  2019      2798    -0.006630      -0.004834  0.472480
+2  2020      2980     0.062956       0.043151  0.611409
+3  2021      4230     0.011755       0.013791  0.571158
+4  2022      4710    -0.006000      -0.009499  0.443312
+5  2023      2963    -0.004556      -0.005709  0.468444
+
+exit_reason:
+ exit_reason
+normal            21113
+delisted_early        2
+Name: count, dtype: int64

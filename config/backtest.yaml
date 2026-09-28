@@ -1,0 +1,6 @@
+holding_period_days: 10   # 매수 후 N거래일째 시가 매도
+
+costs:
+  commission_rate: 0.00015   # 매수/매도 각각 0.015%
+  tax_rate: 0.002            # 매도시 증권거래세 0.20%
+  slippage_rate: 0.001       # 슬리피지 0.1%, 매수/매도 각 방향에 불리하게 적용

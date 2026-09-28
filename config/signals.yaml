@@ -1,0 +1,40 @@
+# Starting-point parameters, not tuned results. Step 4 (파라미터 안정성)
+# is expected to sweep these and check neighboring values before trusting
+# any one setting.
+
+mean_reversion:
+  liquidity_lookback: 20               # 유동성 판단 기간 (거래일)
+  liquidity_min_avg_trade_value: 1000000000  # 최근 20일 평균 거래대금 최소 기준 (원)
+  drawdown_lookback: 20                # N일 고점 대비 낙폭 판단 기간
+  drawdown_min_pct: -0.15              # 20일 고점 대비 -15% 이하 하락
+  excess_decline_min_pct: -0.10        # 같은 기간 시장(지수) 대비 -10%p 이상 초과 하락
+  volume_spike_lookback: 20            # 평균 거래량 계산 기간 (당일 제외)
+  volume_spike_multiplier: 3.0         # 당일 거래량이 평균의 3배 이상이면 정보성 하락으로 보고 제외
+
+trend_following:
+  liquidity_lookback: 20
+  liquidity_min_avg_trade_value: 1000000000
+  ma_period: 120                       # 장기 이동평균선 기간
+  breakout_lookback: 60                # N일 신고가 돌파 판단 기간 (당일 제외)
+
+rsi_reversal:
+  liquidity_lookback: 20
+  liquidity_min_avg_trade_value: 1000000000
+  rsi_period: 14                       # RSI 계산 기간 (표준값)
+  oversold_threshold: 30               # RSI가 이 값 아래로 갔다가 다시 위로 올라오면 매수
+
+macd_crossover:
+  liquidity_lookback: 20
+  liquidity_min_avg_trade_value: 1000000000
+  fast_period: 12                      # 표준값 (Gerald Appel)
+  slow_period: 26
+  signal_period: 9
+
+momentum_breakout:
+  liquidity_lookback: 20
+  liquidity_min_avg_trade_value: 1000000000
+  momentum_lookback: 3                 # 최근 N거래일 누적 수익률 판단 기간
+  momentum_min_pct: 0.02               # N일 이내 +2% 이상 상승하면 진입
+  trailing_stop_pct: -0.03             # 매수 후 최고종가 대비 -3% 빠지면 청산
+  max_holding_days: 20                 # 트레일링 스탑이 안 걸려도 이 날짜엔 강제 청산
+  exempt_top_n_mktcap: 20              # 시가총액 상위 N개는 트레일링 스탑 예외 (최대 보유일까지 홀드)

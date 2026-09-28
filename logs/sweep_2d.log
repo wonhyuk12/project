@@ -1,0 +1,164 @@
+universe loaded: 3265973 rows in 2.2s
+spliced 4 cached combos for multiplier=3.0
+2026-09-02 13:34:22,002 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 13:34:22,002 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 13:37:00,165 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 13:38:00,782 INFO mean_reversion: 251124 signals -> 249082 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 13:38:01,439 INFO drawdown_min_pct=-0.1, volume_spike_multiplier=2.0 -> {'n_trades': 249082, 'mean_return': np.float64(-0.004894704294274241), 'median_return': np.float64(-0.011884909793103162), 'win_rate': np.float64(0.4451465782352799)}
+2026-09-02 13:38:27,240 INFO skip 099660 signal=2018-07-06: no entry price available
+2026-09-02 13:38:40,108 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 13:40:10,934 INFO skip 197210 signal=2020-05-13: no entry price available
+2026-09-02 13:40:19,997 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 13:40:19,997 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 13:41:09,718 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 13:41:28,145 INFO skip 065620 signal=2021-08-06: no entry price available
+2026-09-02 13:41:32,736 INFO skip 086250 signal=2021-08-30: no entry price available
+2026-09-02 13:45:34,300 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 13:46:32,443 INFO mean_reversion: 260792 signals -> 258696 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 13:46:33,190 INFO drawdown_min_pct=-0.1, volume_spike_multiplier=4.0 -> {'n_trades': 258696, 'mean_return': np.float64(-0.004743406866653899), 'median_return': np.float64(-0.011793679567242239), 'win_rate': np.float64(0.44596746760676625)}
+2026-09-02 13:46:40,990 INFO skip 039790 signal=2018-03-08: no entry price available
+2026-09-02 13:46:50,032 INFO skip 087220 signal=2018-05-04: no entry price available
+2026-09-02 13:47:02,453 INFO skip 099660 signal=2018-07-06: no entry price available
+2026-09-02 13:47:16,612 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 13:48:23,446 INFO skip 035480 signal=2019-12-11: no entry price available
+2026-09-02 13:48:48,166 INFO skip 197210 signal=2020-05-13: no entry price available
+2026-09-02 13:48:57,440 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 13:48:57,440 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 13:49:39,088 INFO skip 036260 signal=2021-02-10: no entry price available
+2026-09-02 13:49:50,939 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 13:50:08,744 INFO skip 065620 signal=2021-08-06: no entry price available
+2026-09-02 13:50:13,002 INFO skip 086250 signal=2021-08-30: no entry price available
+2026-09-02 13:50:56,293 INFO skip 050320 signal=2022-05-30: no entry price available
+2026-09-02 13:51:33,016 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 13:52:26,756 INFO mean_reversion: 262116 signals -> 260000 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 13:52:27,437 INFO drawdown_min_pct=-0.1, volume_spike_multiplier=5.0 -> {'n_trades': 260000, 'mean_return': np.float64(-0.004840520519694454), 'median_return': np.float64(-0.01183629671061095), 'win_rate': np.float64(0.4458384615384615)}
+2026-09-02 13:57:33,499 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 13:57:33,499 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 13:59:46,721 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 14:00:37,049 INFO mean_reversion: 183563 signals -> 181758 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 14:00:37,907 INFO drawdown_min_pct=-0.15, volume_spike_multiplier=2.0 -> {'n_trades': 181758, 'mean_return': np.float64(-0.002743177484324636), 'median_return': np.float64(-0.00948173981247012), 'win_rate': np.float64(0.45873083990800956)}
+2026-09-02 14:01:06,230 INFO skip 099660 signal=2018-07-06: no entry price available
+2026-09-02 14:01:18,592 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 14:02:45,204 INFO skip 197210 signal=2020-05-13: no entry price available
+2026-09-02 14:02:52,673 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 14:02:52,673 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 14:03:34,951 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 14:03:54,261 INFO skip 065620 signal=2021-08-06: no entry price available
+2026-09-02 14:03:58,716 INFO skip 086250 signal=2021-08-30: no entry price available
+2026-09-02 14:05:20,267 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 14:06:11,716 INFO mean_reversion: 191281 signals -> 189423 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 14:06:12,446 INFO drawdown_min_pct=-0.15, volume_spike_multiplier=4.0 -> {'n_trades': 189423, 'mean_return': np.float64(-0.0025363084171474088), 'median_return': np.float64(-0.009321885251859313), 'win_rate': np.float64(0.4596379531524683)}
+2026-09-02 14:06:20,032 INFO skip 039790 signal=2018-03-08: no entry price available
+2026-09-02 14:06:27,704 INFO skip 087220 signal=2018-05-04: no entry price available
+2026-09-02 14:06:38,214 INFO skip 099660 signal=2018-07-06: no entry price available
+2026-09-02 14:06:50,108 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 14:07:51,677 INFO skip 035480 signal=2019-12-11: no entry price available
+2026-09-02 14:08:14,198 INFO skip 197210 signal=2020-05-13: no entry price available
+2026-09-02 14:08:21,770 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 14:08:21,771 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 14:08:55,162 INFO skip 036260 signal=2021-02-10: no entry price available
+2026-09-02 14:09:05,168 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 14:09:21,165 INFO skip 065620 signal=2021-08-06: no entry price available
+2026-09-02 14:09:25,527 INFO skip 086250 signal=2021-08-30: no entry price available
+2026-09-02 14:10:07,448 INFO skip 050320 signal=2022-05-30: no entry price available
+2026-09-02 14:10:42,570 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 14:11:31,165 INFO mean_reversion: 192375 signals -> 190497 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 14:11:31,795 INFO drawdown_min_pct=-0.15, volume_spike_multiplier=5.0 -> {'n_trades': 190497, 'mean_return': np.float64(-0.0026778697870111067), 'median_return': np.float64(-0.009379687814129501), 'win_rate': np.float64(0.4594770521320546)}
+2026-09-02 14:13:22,071 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 14:13:22,071 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 14:15:16,807 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 14:15:58,034 INFO mean_reversion: 115031 signals -> 113538 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 14:15:58,411 INFO drawdown_min_pct=-0.2, volume_spike_multiplier=2.0 -> {'n_trades': 113538, 'mean_return': np.float64(0.0006382054391105031), 'median_return': np.float64(-0.007712778180648434), 'win_rate': np.float64(0.4698515034613962)}
+2026-09-02 14:16:18,905 INFO skip 099660 signal=2018-07-06: no entry price available
+2026-09-02 14:16:28,378 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 14:17:37,433 INFO skip 197210 signal=2020-05-13: no entry price available
+2026-09-02 14:17:43,030 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 14:17:43,030 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 14:18:16,878 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 14:18:29,909 INFO skip 065620 signal=2021-08-06: no entry price available
+2026-09-02 14:18:33,075 INFO skip 086250 signal=2021-08-30: no entry price available
+2026-09-02 14:19:38,307 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 14:20:19,253 INFO mean_reversion: 120659 signals -> 119113 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 14:20:19,676 INFO drawdown_min_pct=-0.2, volume_spike_multiplier=4.0 -> {'n_trades': 119113, 'mean_return': np.float64(0.0009358552248807128), 'median_return': np.float64(-0.007619477493595409), 'win_rate': np.float64(0.4706539168688556)}
+2026-09-02 14:20:25,756 INFO skip 039790 signal=2018-03-08: no entry price available
+2026-09-02 14:20:31,863 INFO skip 087220 signal=2018-05-04: no entry price available
+2026-09-02 14:20:39,939 INFO skip 099660 signal=2018-07-06: no entry price available
+2026-09-02 14:20:49,429 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 14:21:39,643 INFO skip 035480 signal=2019-12-11: no entry price available
+2026-09-02 14:21:59,035 INFO skip 197210 signal=2020-05-13: no entry price available
+2026-09-02 14:22:04,500 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 14:22:04,500 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 14:22:30,555 INFO skip 036260 signal=2021-02-10: no entry price available
+2026-09-02 14:22:38,622 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 14:22:51,755 INFO skip 065620 signal=2021-08-06: no entry price available
+2026-09-02 14:22:54,855 INFO skip 086250 signal=2021-08-30: no entry price available
+2026-09-02 14:23:28,904 INFO skip 050320 signal=2022-05-30: no entry price available
+2026-09-02 14:24:00,084 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 14:26:30,763 INFO mean_reversion: 121506 signals -> 119942 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 14:26:31,190 INFO drawdown_min_pct=-0.2, volume_spike_multiplier=5.0 -> {'n_trades': 119942, 'mean_return': np.float64(0.0007195573879027515), 'median_return': np.float64(-0.007675985112381948), 'win_rate': np.float64(0.47041903586733586)}
+2026-09-02 14:28:07,292 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 14:28:07,292 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 14:29:53,954 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 14:30:31,943 INFO mean_reversion: 68208 signals -> 66894 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 14:30:32,180 INFO drawdown_min_pct=-0.25, volume_spike_multiplier=2.0 -> {'n_trades': 66894, 'mean_return': np.float64(0.00640876518429775), 'median_return': np.float64(-0.005723687563737853), 'win_rate': np.float64(0.47895177444912845)}
+2026-09-02 14:30:50,554 INFO skip 099660 signal=2018-07-06: no entry price available
+2026-09-02 14:30:59,288 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 14:32:03,495 INFO skip 197210 signal=2020-05-13: no entry price available
+2026-09-02 14:32:08,533 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 14:32:08,533 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 14:32:39,739 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 14:32:51,873 INFO skip 065620 signal=2021-08-06: no entry price available
+2026-09-02 14:32:54,467 INFO skip 086250 signal=2021-08-30: no entry price available
+2026-09-02 14:34:02,917 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 14:34:49,688 INFO mean_reversion: 72220 signals -> 70854 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 14:34:50,032 INFO drawdown_min_pct=-0.25, volume_spike_multiplier=4.0 -> {'n_trades': 70854, 'mean_return': np.float64(0.006878262269481615), 'median_return': np.float64(-0.005552694472600251), 'win_rate': np.float64(0.47977531261467243)}
+2026-09-02 14:34:56,395 INFO skip 039790 signal=2018-03-08: no entry price available
+2026-09-02 14:35:02,681 INFO skip 087220 signal=2018-05-04: no entry price available
+2026-09-02 14:35:10,926 INFO skip 099660 signal=2018-07-06: no entry price available
+2026-09-02 14:35:21,149 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 14:36:11,813 INFO skip 035480 signal=2019-12-11: no entry price available
+2026-09-02 14:36:32,421 INFO skip 197210 signal=2020-05-13: no entry price available
+2026-09-02 14:36:38,424 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 14:36:38,424 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 14:37:05,597 INFO skip 036260 signal=2021-02-10: no entry price available
+2026-09-02 14:37:14,038 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 14:37:28,133 INFO skip 065620 signal=2021-08-06: no entry price available
+2026-09-02 14:37:31,611 INFO skip 086250 signal=2021-08-30: no entry price available
+2026-09-02 14:38:13,537 INFO skip 050320 signal=2022-05-30: no entry price available
+2026-09-02 14:38:49,506 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 14:39:38,317 INFO mean_reversion: 72870 signals -> 71488 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 14:39:38,649 INFO drawdown_min_pct=-0.25, volume_spike_multiplier=5.0 -> {'n_trades': 71488, 'mean_return': np.float64(0.006476797600005626), 'median_return': np.float64(-0.005681774939189598), 'win_rate': np.float64(0.4793531781557744)}
+
+=== 2D grid result ===
+    drawdown_min_pct  volume_spike_multiplier  n_trades  mean_return  median_return  win_rate
+0              -0.25                      2.0     66894     0.006409      -0.005724  0.478952
+1              -0.20                      2.0    113538     0.000638      -0.007713  0.469852
+2              -0.15                      2.0    181758    -0.002743      -0.009482  0.458731
+3              -0.10                      2.0    249082    -0.004895      -0.011885  0.445147
+4              -0.25                      3.0     69731     0.007289      -0.005368  0.480274
+5              -0.20                      3.0    117609     0.001202      -0.007526  0.470933
+6              -0.15                      3.0    187425    -0.002353      -0.009262  0.459784
+7              -0.10                      3.0    256222    -0.004597      -0.011752  0.446066
+8              -0.25                      4.0     70854     0.006878      -0.005553  0.479775
+9              -0.20                      4.0    119113     0.000936      -0.007619  0.470654
+10             -0.15                      4.0    189423    -0.002536      -0.009322  0.459638
+11             -0.10                      4.0    258696    -0.004743      -0.011794  0.445967
+12             -0.25                      5.0     71488     0.006477      -0.005682  0.479353
+13             -0.20                      5.0    119942     0.000720      -0.007676  0.470419
+14             -0.15                      5.0    190497    -0.002678      -0.009380  0.459477
+15             -0.10                      5.0    260000    -0.004841      -0.011836  0.445838
+
+=== mean_return pivot (rows=drawdown_min_pct, cols=volume_spike_multiplier) ===
+volume_spike_multiplier       2.0       3.0       4.0       5.0
+drawdown_min_pct                                               
+-0.25                    0.006409  0.007289  0.006878  0.006477
+-0.20                    0.000638  0.001202  0.000936  0.000720
+-0.15                   -0.002743 -0.002353 -0.002536 -0.002678
+-0.10                   -0.004895 -0.004597 -0.004743 -0.004841
+
+=== best drawdown_min_pct per multiplier column ===
+volume_spike_multiplier
+2.0   -0.25
+3.0   -0.25
+4.0   -0.25
+5.0   -0.25

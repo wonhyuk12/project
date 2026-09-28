@@ -1,0 +1,51 @@
+universe loaded: 3265973 rows in 2.0s
+2026-09-02 17:34:29,470 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 17:35:40,242 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 17:35:40,242 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 17:37:27,694 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 17:38:05,988 INFO mean_reversion: 83613 signals -> 82207 trades executed (2018-01-01 ~ 2023-12-31)
+excess_decline_min_pct=-0.0005 took 244.2s -> all={'n_trades': 82207, 'mean_return': np.float64(0.012933189740591251), 'median_return': np.float64(-0.0014603256695888793), 'win_rate': np.float64(0.49421582103713796)} ex2020={'n_trades': 64658, 'mean_return': np.float64(-0.011202092800199608), 'median_return': np.float64(-0.01321150507967233), 'win_rate': np.float64(0.44860651427510906)}
+2026-09-02 17:38:33,380 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 17:39:44,169 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 17:39:44,170 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 17:41:30,615 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 17:42:08,555 INFO mean_reversion: 83256 signals -> 81851 trades executed (2018-01-01 ~ 2023-12-31)
+excess_decline_min_pct=-0.005 took 242.6s -> all={'n_trades': 81851, 'mean_return': np.float64(0.012868727690903229), 'median_return': np.float64(-0.0014603256695888793), 'win_rate': np.float64(0.4942028808444613)} ex2020={'n_trades': 64412, 'mean_return': np.float64(-0.011160694308091738), 'median_return': np.float64(-0.013128831032602355), 'win_rate': np.float64(0.44884493572626216)}
+2026-09-02 17:42:35,591 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 17:43:44,654 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 17:43:44,654 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 17:45:28,371 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 17:46:05,355 INFO mean_reversion: 78879 signals -> 77499 trades executed (2018-01-01 ~ 2023-12-31)
+excess_decline_min_pct=-0.05 took 236.8s -> all={'n_trades': 77499, 'mean_return': np.float64(0.011230934243182531), 'median_return': np.float64(-0.0025733612330336012), 'win_rate': np.float64(0.4907547194157344)} ex2020={'n_trades': 61637, 'mean_return': np.float64(-0.011445452797039273), 'median_return': np.float64(-0.013215167510571325), 'win_rate': np.float64(0.4483832762788585)}
+2026-09-02 17:46:31,897 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 17:47:38,771 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 17:47:38,771 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 17:49:21,529 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 17:49:58,542 INFO mean_reversion: 71069 signals -> 69731 trades executed (2018-01-01 ~ 2023-12-31)
+excess_decline_min_pct=-0.1 took 233.1s -> all={'n_trades': 69731, 'mean_return': np.float64(0.007288503677763128), 'median_return': np.float64(-0.00536833980483726), 'win_rate': np.float64(0.48027419655533404)} ex2020={'n_trades': 56419, 'mean_return': np.float64(-0.013444814642949245), 'median_return': np.float64(-0.014999588545814553), 'win_rate': np.float64(0.4422269093745015)}
+2026-09-02 17:50:24,857 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 17:51:29,649 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 17:51:29,649 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 17:53:47,437 INFO mean_reversion: 59367 signals -> 58080 trades executed (2018-01-01 ~ 2023-12-31)
+excess_decline_min_pct=-0.15 took 228.9s -> all={'n_trades': 58080, 'mean_return': np.float64(-0.0001406346841165075), 'median_return': np.float64(-0.011632425511252703), 'win_rate': np.float64(0.45853994490358124)} ex2020={'n_trades': 47957, 'mean_return': np.float64(-0.017929795037060853), 'median_return': np.float64(-0.01925744405649882), 'win_rate': np.float64(0.4264445232187168)}
+2026-09-02 17:54:13,146 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 17:55:16,268 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 17:55:16,269 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 17:57:31,616 INFO mean_reversion: 45601 signals -> 44371 trades executed (2018-01-01 ~ 2023-12-31)
+excess_decline_min_pct=-0.2 took 224.1s -> all={'n_trades': 44371, 'mean_return': np.float64(-0.011234854187856524), 'median_return': np.float64(-0.019850983235381894), 'win_rate': np.float64(0.42919925176353924)} ex2020={'n_trades': 37183, 'mean_return': np.float64(-0.024099032101034416), 'median_return': np.float64(-0.025211275310525017), 'win_rate': np.float64(0.40550789339214155)}
+
+=== sweep result ===
+   excess_decline_min_pct  n_trades  mean_return_all  win_rate_all  mean_return_ex2020  win_rate_ex2020
+0                 -0.0005     82207         0.012933      0.494216           -0.011202         0.448607
+1                 -0.0050     81851         0.012869      0.494203           -0.011161         0.448845
+2                 -0.0500     77499         0.011231      0.490755           -0.011445         0.448383
+3                 -0.1000     69731         0.007289      0.480274           -0.013445         0.442227
+4                 -0.1500     58080        -0.000141      0.458540           -0.017930         0.426445
+5                 -0.2000     44371        -0.011235      0.429199           -0.024099         0.405508
+
+=== stability (all years) ===
+⚠ excess_decline_min_pct=-0.1: 이웃값과 부호가 다름 (mean_return=0.0073 vs 이웃 [0.011230934243182531, -0.0001406346841165075])
+⚠ excess_decline_min_pct=-0.15: 이웃값과 부호가 다름 (mean_return=-0.0001 vs 이웃 [0.007288503677763128, -0.011234854187856524])
+
+=== stability (ex-2020) ===
+이웃값 사이에서 mean_return 부호/급변 이상 없음

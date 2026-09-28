@@ -1,0 +1,60 @@
+2026-09-02 10:24:41,372 INFO universe loaded: 3265973 rows in 2.0s
+2026-09-02 10:25:22,299 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 10:27:02,056 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 10:27:02,056 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 10:29:39,659 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 10:32:33,373 INFO mean_reversion: 189255 signals -> 187425 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 10:32:34,873 INFO mean_reversion: 473.5s -> 187425 trades
+2026-09-02 10:45:22,179 INFO trend_following: 84916 signals -> 84750 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 10:45:22,450 INFO trend_following: 767.4s -> 84750 trades
+
+=== mean_reversion ===
+summary: {'n_signals_executed': 187425, 'n_delisted_early': 12, 'mean_return': np.float64(-0.002353236215594886), 'median_return': np.float64(-0.009261659827697553), 'win_rate': np.float64(0.4597839135654262), 'mdd': np.float64(-0.8700600415317151)}
+distribution:
+ 0.05   -0.193434
+0.25   -0.074413
+0.50   -0.009262
+0.75    0.059047
+0.95    0.240075
+Name: net_return, dtype: float64
+yearly:
+    year  n_trades  mean_return  median_return  win_rate
+0  2018     29748    -0.012725      -0.016739  0.425676
+1  2019     23635    -0.005250      -0.004293  0.475566
+2  2020     32021     0.039702       0.020112  0.568721
+3  2021     37280    -0.006193      -0.010591  0.452092
+4  2022     32435    -0.017380      -0.020638  0.418283
+5  2023     32306    -0.012851      -0.017133  0.422213
+exit_reason:
+ exit_reason
+normal            187413
+delisted_early        12
+Name: count, dtype: int64
+
+=== trend_following ===
+summary: {'n_signals_executed': 84750, 'n_delisted_early': 2, 'mean_return': np.float64(-0.011255423354594153), 'median_return': np.float64(-0.025763831879707003), 'win_rate': np.float64(0.392212389380531), 'mdd': np.float64(-0.7787789750569386)}
+distribution:
+ 0.05   -0.212618
+0.25   -0.091458
+0.50   -0.025764
+0.75    0.044109
+0.95    0.256717
+Name: net_return, dtype: float64
+yearly:
+    year  n_trades  mean_return  median_return  win_rate
+0  2018      3273    -0.035258      -0.035409  0.342499
+1  2019     12824    -0.015114      -0.024781  0.383032
+2  2020     19815    -0.001844      -0.025685  0.409740
+3  2021     22168    -0.004904      -0.021334  0.411720
+4  2022     10601    -0.038385      -0.042282  0.324969
+5  2023     16069    -0.005756      -0.020975  0.405501
+exit_reason:
+ exit_reason
+normal            84748
+delisted_early        2
+Name: count, dtype: int64
+
+=== comparison ===
+          strategy  n_signals_executed  n_delisted_early  mean_return  median_return  win_rate       mdd
+0   mean_reversion              187425                12    -0.002353      -0.009262  0.459784 -0.870060
+1  trend_following               84750                 2    -0.011255      -0.025764  0.392212 -0.778779

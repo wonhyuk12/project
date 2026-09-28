@@ -1,0 +1,25 @@
+universe loaded: 3265973 rows in 2.2s
+2026-09-02 11:26:39,217 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 11:28:37,401 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 11:28:37,402 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 11:31:41,316 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 11:32:45,716 INFO mean_reversion: 258290 signals -> 256222 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 11:32:46,690 INFO drawdown_min_pct=-0.1 -> {'n_trades': 256222, 'mean_return': np.float64(-0.004596818241416861), 'median_return': np.float64(-0.011751541268181008), 'win_rate': np.float64(0.44606630187883944)}
+2026-09-02 11:33:24,249 INFO skip 005980 signal=2018-10-02: no entry price available
+2026-09-02 11:35:00,959 INFO skip 099340 signal=2020-06-30: no entry price available
+2026-09-02 11:35:00,959 INFO skip 099350 signal=2020-06-30: no entry price available
+2026-09-02 11:37:20,283 INFO skip 096300 signal=2023-02-01: no entry price available
+2026-09-02 11:38:08,154 INFO mean_reversion: 119127 signals -> 117609 trades executed (2018-01-01 ~ 2023-12-31)
+2026-09-02 11:38:08,698 INFO drawdown_min_pct=-0.2 -> {'n_trades': 117609, 'mean_return': np.float64(0.001201969237540796), 'median_return': np.float64(-0.007525877067036657), 'win_rate': np.float64(0.47093334693773437)}
+
+=== sweep result ===
+   drawdown_min_pct  n_trades  mean_return  median_return  win_rate
+0             -0.20    117609     0.001202      -0.007526  0.470933
+1             -0.15    187425    -0.002353      -0.009262  0.459784
+2             -0.10    256222    -0.004597      -0.011752  0.446066
+
+=== stability check ===
+Traceback (most recent call last):
+  File "C:\Users\user\Desktop\stock-backtest\scripts\run_sweep_demo.py", line 54, in <module>
+    print(w, flush=True)
+UnicodeEncodeError: 'cp949' codec can't encode character '\u26a0' in position 0: illegal multibyte sequence

@@ -1,0 +1,47 @@
+universe loaded: 3265973 rows in 1.9s
+
+### SWEEP 1: oversold_threshold (rsi_period=14 fixed) ###
+2026-09-02 18:42:44,776 INFO rsi_reversal: 3463 signals -> 3461 trades executed (2018-01-01 ~ 2023-12-31)
+oversold_threshold=20 took 11.9s -> all={'n_trades': 3461, 'mean_return': np.float64(0.06123002875712269), 'median_return': np.float64(0.025282391259673163), 'win_rate': np.float64(0.5952036983530772)} ex2020={'n_trades': 2596, 'mean_return': np.float64(-0.005048147581021892), 'median_return': np.float64(0.0014738699597967623), 'win_rate': np.float64(0.5061633281972265)}
+2026-09-02 18:42:59,203 INFO rsi_reversal: 9315 signals -> 9302 trades executed (2018-01-01 ~ 2023-12-31)
+oversold_threshold=25 took 14.5s -> all={'n_trades': 9302, 'mean_return': np.float64(0.026825655599365637), 'median_return': np.float64(0.009969537281862433), 'win_rate': np.float64(0.5454740915932058)} ex2020={'n_trades': 7671, 'mean_return': np.float64(-0.0002939529801497638), 'median_return': np.float64(0.0013750986011220492), 'win_rate': np.float64(0.5060617911615174)}
+2026-09-02 18:43:10,420 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 18:43:18,708 INFO rsi_reversal: 21082 signals -> 21064 trades executed (2018-01-01 ~ 2023-12-31)
+oversold_threshold=30 took 19.5s -> all={'n_trades': 21064, 'mean_return': np.float64(0.005134452537812679), 'median_return': np.float64(-0.0002821541874828847), 'win_rate': np.float64(0.49895556399544244)} ex2020={'n_trades': 18077, 'mean_return': np.float64(-0.004222664789979163), 'median_return': np.float64(-0.004293062334355966), 'win_rate': np.float64(0.4805000829783703)}
+2026-09-02 18:43:34,021 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 18:43:46,600 INFO rsi_reversal: 40663 signals -> 40638 trades executed (2018-01-01 ~ 2023-12-31)
+oversold_threshold=35 took 28.0s -> all={'n_trades': 40638, 'mean_return': np.float64(-0.00493420368413032), 'median_return': np.float64(-0.007881195443060972), 'win_rate': np.float64(0.45873320537428025)} ex2020={'n_trades': 35040, 'mean_return': np.float64(-0.008091964643709242), 'median_return': np.float64(-0.009399251758282481), 'win_rate': np.float64(0.4474885844748858)}
+2026-09-02 18:44:06,951 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 18:44:24,244 INFO rsi_reversal: 64157 signals -> 64131 trades executed (2018-01-01 ~ 2023-12-31)
+oversold_threshold=40 took 37.7s -> all={'n_trades': 64131, 'mean_return': np.float64(-0.009691077681294787), 'median_return': np.float64(-0.012164263422621864), 'win_rate': np.float64(0.43217788588981926)} ex2020={'n_trades': 54909, 'mean_return': np.float64(-0.011956140235944395), 'median_return': np.float64(-0.013971866102673336), 'win_rate': np.float64(0.4187109581307254)}
+   oversold_threshold  mean_return_all  win_rate_all  mean_return_ex2020  win_rate_ex2020  n_trades
+0                  20         0.061230      0.595204           -0.005048         0.506163      3461
+1                  25         0.026826      0.545474           -0.000294         0.506062      9302
+2                  30         0.005134      0.498956           -0.004223         0.480500     21064
+3                  35        -0.004934      0.458733           -0.008092         0.447489     40638
+4                  40        -0.009691      0.432178           -0.011956         0.418711     64131
+stability(all): ['⚠ oversold_threshold=30: 이웃값과 부호가 다름 (mean_return=0.0051 vs 이웃 [0.026825655599365637, -0.00493420368413032])', '⚠ oversold_threshold=35: 이웃값과 부호가 다름 (mean_return=-0.0049 vs 이웃 [0.005134452537812679, -0.009691077681294787])']
+stability(ex2020): ['이웃값 사이에서 mean_return 부호/급변 이상 없음']
+
+### SWEEP 2: rsi_period (oversold_threshold=30 fixed) ###
+2026-09-02 18:45:04,042 INFO rsi_reversal: 69041 signals -> 68998 trades executed (2018-01-01 ~ 2023-12-31)
+rsi_period=7 took 39.8s -> all={'n_trades': 68998, 'mean_return': np.float64(-0.006282912753418543), 'median_return': np.float64(-0.010496843877444064), 'win_rate': np.float64(0.44299834777819647)} ex2020={'n_trades': 58718, 'mean_return': np.float64(-0.010158253072540398), 'median_return': np.float64(-0.013008226162788704), 'win_rate': np.float64(0.4282502810041214)}
+2026-09-02 18:45:31,696 INFO rsi_reversal: 40007 signals -> 39978 trades executed (2018-01-01 ~ 2023-12-31)
+rsi_period=10 took 27.6s -> all={'n_trades': 39978, 'mean_return': np.float64(-0.002722566386165583), 'median_return': np.float64(-0.0064959537893685675), 'win_rate': np.float64(0.4654810145580069)} ex2020={'n_trades': 34154, 'mean_return': np.float64(-0.007606420760895244), 'median_return': np.float64(-0.008684277981693567), 'win_rate': np.float64(0.4521285940153423)}
+2026-09-02 18:45:43,171 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 18:45:51,414 INFO rsi_reversal: 21082 signals -> 21064 trades executed (2018-01-01 ~ 2023-12-31)
+rsi_period=14 took 19.7s -> all={'n_trades': 21064, 'mean_return': np.float64(0.005134452537812679), 'median_return': np.float64(-0.0002821541874828847), 'win_rate': np.float64(0.49895556399544244)} ex2020={'n_trades': 18077, 'mean_return': np.float64(-0.004222664789979163), 'median_return': np.float64(-0.004293062334355966), 'win_rate': np.float64(0.4805000829783703)}
+2026-09-02 18:46:00,126 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 18:46:05,638 INFO rsi_reversal: 8589 signals -> 8578 trades executed (2018-01-01 ~ 2023-12-31)
+rsi_period=21 took 14.2s -> all={'n_trades': 8578, 'mean_return': np.float64(0.026393870174535834), 'median_return': np.float64(0.011329971564253055), 'win_rate': np.float64(0.5518768943809745)} ex2020={'n_trades': 7127, 'mean_return': np.float64(0.001978109933726311), 'median_return': np.float64(0.00293967571164136), 'win_rate': np.float64(0.5131191244562929)}
+2026-09-02 18:46:13,513 INFO skip 102210 signal=2021-04-16: no entry price available
+2026-09-02 18:46:17,989 INFO rsi_reversal: 4322 signals -> 4315 trades executed (2018-01-01 ~ 2023-12-31)
+rsi_period=28 took 12.3s -> all={'n_trades': 4315, 'mean_return': np.float64(0.039600450272808355), 'median_return': np.float64(0.01586294854956378), 'win_rate': np.float64(0.5571263035921206)} ex2020={'n_trades': 3348, 'mean_return': np.float64(-0.0048557834908712644), 'median_return': np.float64(-0.0037513284183246396), 'win_rate': np.float64(0.4859617682198327)}
+   rsi_period  mean_return_all  win_rate_all  mean_return_ex2020  win_rate_ex2020  n_trades
+0           7        -0.006283      0.442998           -0.010158         0.428250     68998
+1          10        -0.002723      0.465481           -0.007606         0.452129     39978
+2          14         0.005134      0.498956           -0.004223         0.480500     21064
+3          21         0.026394      0.551877            0.001978         0.513119      8578
+4          28         0.039600      0.557126           -0.004856         0.485962      4315
+stability(all): ['⚠ rsi_period=10: 이웃값과 부호가 다름 (mean_return=-0.0027 vs 이웃 [-0.006282912753418543, 0.005134452537812679])', '⚠ rsi_period=14: 이웃값과 부호가 다름 (mean_return=0.0051 vs 이웃 [-0.002722566386165583, 0.026393870174535834])']
+stability(ex2020): ['⚠ rsi_period=14: 이웃값과 부호가 다름 (mean_return=-0.0042 vs 이웃 [-0.007606420760895244, 0.001978109933726311])', '⚠ rsi_period=21: 이웃값과 부호가 다름 (mean_return=0.0020 vs 이웃 [-0.004222664789979163, -0.0048557834908712644])', '⚠ rsi_period=28: 이웃값과 부호가 다름 (mean_return=-0.0049 vs 이웃 [0.001978109933726311])']
